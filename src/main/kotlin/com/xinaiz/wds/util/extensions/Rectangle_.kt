@@ -1,6 +1,6 @@
 package com.xinaiz.wds.util.extensions
 
-import com.xinaiz.wds.core.ExtendedBy
+import com.xinaiz.wds.core.by.ExtendedBy
 import com.xinaiz.wds.elements.proxy.CachedScreenExtendedWebElement
 import com.xinaiz.wds.elements.proxy.ChildRectangleWebElement
 import org.openqa.selenium.Point

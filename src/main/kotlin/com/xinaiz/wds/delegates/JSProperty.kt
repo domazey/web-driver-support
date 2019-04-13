@@ -1,6 +1,6 @@
 package com.xinaiz.wds.delegates
 
-import com.xinaiz.wds.core.ExtendedWebElement
+import com.xinaiz.wds.core.element.ExtendedWebElement
 import kotlin.reflect.KProperty
 
 class JSProperty<T : Any>(private val name: String? = null, private val compoundConverter: Pair<(Any) -> T, (T) -> Any>? = null) : JSReadOnlyProperty<T>(name, compoundConverter?.first) {

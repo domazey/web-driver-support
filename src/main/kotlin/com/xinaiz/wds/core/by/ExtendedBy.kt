@@ -1,5 +1,7 @@
-package com.xinaiz.wds.core
+package com.xinaiz.wds.core.by
 
+import com.xinaiz.evilkotlin.cast.cast
+import com.xinaiz.wds.core.Constants
 import com.xinaiz.wds.elements.proxy.ChildPercentPointWebElement
 import com.xinaiz.wds.elements.proxy.ChildPercentRectangleWebElement
 import com.xinaiz.wds.elements.proxy.ChildPointWebElement
@@ -65,7 +67,7 @@ abstract class ExtendedBy : By() {
             }
             return (context as JavascriptExecutor).executeScript(
                 "return document.elementFromPoint(arguments[0], arguments[1])",
-                point.x, point.y) as WebElement
+                point.x, point.y).cast()
         }
     }
 
@@ -76,7 +78,7 @@ abstract class ExtendedBy : By() {
 
         override fun findElement(context: SearchContext): WebElement {
             if (context !is WebElement) {
-                throw RuntimeException("To findBy parasitic element, you have to findBy it via real WebElement (not driver)")
+                throw RuntimeException("To findBy child rectangle element, you have to findBy it via real WebElement (not driver)")
             }
             return ChildRectangleWebElement(context, rect)
         }
@@ -89,7 +91,7 @@ abstract class ExtendedBy : By() {
 
         override fun findElement(context: SearchContext): WebElement {
             if (context !is WebElement) {
-                throw RuntimeException("To findBy parasitic element, you have to findBy it via real WebElement (not driver)")
+                throw RuntimeException("To findBy child percent rectangle element, you have to findBy it via real WebElement (not driver)")
             }
             return ChildPercentRectangleWebElement(context, rect)
         }
@@ -102,7 +104,7 @@ abstract class ExtendedBy : By() {
 
         override fun findElement(context: SearchContext): WebElement {
             if (context !is WebElement) {
-                throw RuntimeException("To findBy parasitic element, you have to findBy it via real WebElement (not driver)")
+                throw RuntimeException("To findBy child point element, you have to findBy it via real WebElement (not driver)")
             }
             return ChildPointWebElement(context, point)
         }
@@ -115,7 +117,7 @@ abstract class ExtendedBy : By() {
 
         override fun findElement(context: SearchContext): WebElement {
             if (context !is WebElement) {
-                throw RuntimeException("To findBy parasitic element, you have to findBy it via real WebElement (not driver)")
+                throw RuntimeException("To findBy child percent point element, you have to findBy it via real WebElement (not driver)")
             }
             return ChildPercentPointWebElement(context, point)
         }
@@ -131,9 +133,27 @@ abstract class ExtendedBy : By() {
         }
     }
 
-    class ByTemplate(private val resourceClass: Class<*>, private val resourcePath: String, private val similarity: Double, private val precisionListener: ((Double) -> Unit)?, private val cachedScreenshot: BufferedImage?, private val transform: ((BufferedImage)->BufferedImage)? = null) : By() {
+    class ByTemplate(private val resourceClass: Class<*>,
+                     private val resourcePath: String,
+                     private val similarity: Double,
+                     private val cachedScreenshot: BufferedImage?,
+                     private val transform: ((BufferedImage) -> BufferedImage)? = null,
+                     private val fillColor: java.awt.Color = java.awt.Color.BLACK /* unused in single search */,
+                     private val maxResults: Int = 20 /* unused in single search */) : By() {
         override fun findElements(context: SearchContext): List<WebElement> {
-            return listOf(findElement(context))
+            if (context !is WebElement) {
+                throw RuntimeException("To find element by template, you must use WebElement as search context")
+            }
+            val bufferedImage = ImageIO.read(resourceClass.getResourceAsStream(resourcePath))
+            val rectangles = context.extend().findRectangles(
+                bufferedImage,
+                similarity,
+                cachedScreenshot,
+                transform,
+                fillColor,
+                maxResults
+            )
+            return rectangles.map { ByChildRectangle(it).findElement(context) }
         }
 
         override fun findElement(context: SearchContext): WebElement {
@@ -141,7 +161,7 @@ abstract class ExtendedBy : By() {
                 throw RuntimeException("To find element by template, you must use WebElement as search context")
             }
             val bufferedImage = ImageIO.read(resourceClass.getResourceAsStream(resourcePath))
-            val rect = context.extend().findRectangle(bufferedImage, similarity, precisionListener, cachedScreenshot, transform)
+            val rect = context.extend().findRectangle(bufferedImage, similarity, cachedScreenshot, transform)
             return ByChildRectangle(rect).findElement(context)
         }
     }
@@ -186,10 +206,11 @@ abstract class ExtendedBy : By() {
         fun template(resourceClass: Class<*>,
                      resourcePath: String,
                      similarity: Double = Constants.Similarity.DEFAULT.value,
-                     precisionListener: ((Double)->Unit)? = null,
                      cachedScreenshot: BufferedImage? = null,
-                     transform: ((BufferedImage) -> BufferedImage)?): By {
-            return ByTemplate(resourceClass, resourcePath, similarity, precisionListener, cachedScreenshot, transform)
+                     transform: ((BufferedImage) -> BufferedImage)?,
+                     fillColor: java.awt.Color = java.awt.Color.BLACK,
+                     maxResults: Int = 20): By {
+            return ByTemplate(resourceClass, resourcePath, similarity, cachedScreenshot, transform, fillColor, maxResults)
         }
 
         fun value(rawData: String): By {

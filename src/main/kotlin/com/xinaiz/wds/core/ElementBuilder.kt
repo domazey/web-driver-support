@@ -1,5 +1,7 @@
 package com.xinaiz.wds.core
 
+import com.xinaiz.wds.core.driver.ExtendedWebDriver
+import com.xinaiz.wds.core.element.ExtendedWebElement
 import org.openqa.selenium.WebElement
 
 class ElementBuilder<T : ExtendedWebElement>(

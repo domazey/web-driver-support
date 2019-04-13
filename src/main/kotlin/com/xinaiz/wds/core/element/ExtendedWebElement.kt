@@ -1,7 +1,9 @@
 @file:Suppress("unused", "MemberVisibilityCanBePrivate", "HasPlatformType")
 
-package com.xinaiz.wds.core
+package com.xinaiz.wds.core.element
 
+import com.xinaiz.wds.core.by.ExtendedBy
+import com.xinaiz.wds.core.OCRMode
 import com.xinaiz.wds.decorators.CompoundDecorator
 import com.xinaiz.wds.delegates.JSMemberMethod
 import com.xinaiz.wds.delegates.JSProperty
@@ -12,7 +14,6 @@ import com.xinaiz.wds.js.scripts.Scripts
 import com.xinaiz.wds.util.constants.AdjacentPosition
 import com.xinaiz.wds.util.constants.RelativePosition
 import com.xinaiz.wds.util.extensions.extend
-import com.xinaiz.wds.util.extensions.getSubimage
 import com.xinaiz.wds.util.extensions.removeAlpha
 import com.xinaiz.wds.util.label.Extension
 import net.sourceforge.tess4j.Tesseract
@@ -33,7 +34,6 @@ import javax.imageio.ImageIO
 import java.awt.image.DataBufferByte
 import org.opencv.core.Scalar
 import com.xinaiz.wds.elements.tagged.*
-
 
 /**
 
@@ -144,15 +144,25 @@ open class ExtendedWebElement(val original: WebElement) /*: WebElement, Locatabl
     }
 
     fun doBinaryOCRWith(tesseract: Tesseract, treshold: Int = 128, ocrMode: OCRMode = OCRMode.TEXT, transform: ((BufferedImage) -> BufferedImage)? = null): String {
-        if (ocrMode == OCRMode.DIGITS) {
-            tesseract.setTessVariable("tessedit_char_whitelist", "0123456789")
-            tesseract.setTessVariable("tessedit_char_blacklist", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmopqrstuvwxyz/");
+
+        when(ocrMode) {
+
+            OCRMode.TEXT -> Unit
+            OCRMode.DIGITS -> {
+                tesseract.setTessVariable("tessedit_char_whitelist", "0123456789")
+                tesseract.setTessVariable("tessedit_char_blacklist", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmopqrstuvwxyz/,.");
+            }
+            is OCRMode.CUSTOM -> {
+                tesseract.setTessVariable("tessedit_char_whitelist", ocrMode.characters)
+                tesseract.setTessVariable("tessedit_char_blacklist", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmopqrstuvwxyz/,.".replace("[${ocrMode.characters}]".toRegex(), ""))
+            }
         }
+
         val result = doBinaryOCRWith(tesseract::doOCR, treshold, transform)
 
         if (ocrMode != OCRMode.TEXT) {
-            tesseract.setTessVariable("tessedit_char_whitelist", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmopqrstuvwxyz/")
-            tesseract.setTessVariable("tessedit_char_blacklist", "");
+            tesseract.setTessVariable("tessedit_char_whitelist", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmopqrstuvwxyz/,.")
+            tesseract.setTessVariable("tessedit_char_blacklist", "")
         }
         return result
     }
@@ -178,7 +188,7 @@ open class ExtendedWebElement(val original: WebElement) /*: WebElement, Locatabl
             }
         }
         g2.dispose()
-        return if(transform != null) transform(tmp) else tmp
+        return if (transform != null) transform(tmp) else tmp
     }
 
     fun findElement(by: By) = original.findElement(by)
@@ -514,9 +524,8 @@ open class ExtendedWebElement(val original: WebElement) /*: WebElement, Locatabl
 
     fun findRectangle(template: BufferedImage,
                       similarity: Double = 0.8,
-                      precisionListener: ((Double) -> Unit)? = null,
                       cachedScreenshot: BufferedImage? = null,
-                      transform: ((BufferedImage) -> BufferedImage)?): Rectangle {
+                      transform: ((BufferedImage) -> BufferedImage)? = null): Rectangle {
         val matchMethod = Imgproc.TM_CCOEFF_NORMED
         val matTemplate = bufferedImageToMat(template.removeAlpha())
         val screen = (cachedScreenshot ?: getBufferedScreenshot(transform)).removeAlpha()
@@ -533,8 +542,6 @@ open class ExtendedWebElement(val original: WebElement) /*: WebElement, Locatabl
 
         // / Localizing the best match with minMaxLoc
         val mmr = Core.minMaxLoc(result)
-
-        precisionListener?.invoke(mmr.maxVal)
 
         if (mmr.maxVal < similarity) {
             throw RuntimeException("Element not found by template: ${mmr.maxVal} < $similarity")
@@ -557,7 +564,49 @@ open class ExtendedWebElement(val original: WebElement) /*: WebElement, Locatabl
         return foundRect
     }
 
-    fun bufferedImageToMat(bi: BufferedImage): Mat {
+    fun findRectangles(template: BufferedImage,
+                       similarity: Double = 0.8,
+                       cachedScreenshot: BufferedImage? = null,
+                       transform: ((BufferedImage) -> BufferedImage)?,
+                       fillColor: java.awt.Color = java.awt.Color.BLACK,
+                       maxResults: Int = 20): List<Rectangle> {
+        val screen = (cachedScreenshot ?: getBufferedScreenshot(transform)).removeAlpha()
+        var screenCopy = ImageHelper.cloneImage(screen)
+
+        val result = mutableListOf<Rectangle>()
+        var counter = 0
+        while (true) {
+            if(counter >= maxResults) {
+                break
+            }
+            try {
+                val rectangle = findRectangle(template, similarity, screenCopy)
+                result += rectangle
+                screenCopy = fillRectangle(screenCopy, rectangle, fillColor) // fill to prevent duplicate search
+                counter++
+            } catch (ex: Throwable) {
+                if (ex.message?.contains("Element not found by template") == true) {
+                    break
+                } else {
+                    throw ex // rethrow original exception
+                }
+            }
+        }
+
+        return result.toList()
+
+    }
+
+    private fun fillRectangle(screenCopy: BufferedImage, rectangle: Rectangle, fillColor: java.awt.Color): BufferedImage {
+        val clonedImage = ImageHelper.cloneImage(screenCopy)
+        val graph = clonedImage.createGraphics()
+        graph.color = fillColor
+        graph.fill(java.awt.Rectangle(rectangle.x, rectangle.y, rectangle.width, rectangle.height))
+        graph.dispose()
+        return clonedImage
+    }
+
+    private fun bufferedImageToMat(bi: BufferedImage): Mat {
         val mat = Mat(bi.height, bi.width, CvType.CV_8UC3)
         val data = (bi.raster.dataBuffer as DataBufferByte).data
         mat.put(0, 0, data)

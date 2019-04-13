@@ -1,6 +1,7 @@
 package com.xinaiz.wds.core
 
-enum class OCRMode {
-    TEXT,
-    DIGITS
+sealed class OCRMode {
+    object TEXT : OCRMode()
+    object DIGITS: OCRMode()
+    class CUSTOM(val characters: String) : OCRMode()
 }

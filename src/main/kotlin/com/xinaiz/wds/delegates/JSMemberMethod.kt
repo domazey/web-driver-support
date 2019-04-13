@@ -1,7 +1,7 @@
 package com.xinaiz.wds.delegates
 
 import kotlin.reflect.KProperty
-import com.xinaiz.wds.core.ExtendedWebElement
+import com.xinaiz.wds.core.element.ExtendedWebElement
 
 open class JSMemberMethod<T>(private val name: String? = null, private val readConverter: ((Any) -> T)? = null) {
     operator fun getValue(thisRef: ExtendedWebElement, property: KProperty<*>): T {

@@ -1,6 +1,6 @@
 package com.xinaiz.wds.util.extensions
 
-import com.xinaiz.wds.core.ExtendedBy
+import com.xinaiz.wds.core.by.ExtendedBy
 import org.openqa.selenium.Point
 import org.openqa.selenium.WebElement
 

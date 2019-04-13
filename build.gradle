@@ -68,7 +68,7 @@ dependencies {
     implementation 'org.bytedeco:javacv:1.4.3'
     
     // Evil kotlin
-    implementation 'com.github.xinaiz:evil-kotlin:0.0.1-alpha'
+    implementation 'com.github.xinaiz:evil-kotlin:0.0.4-alpha'
 
 //    implementation 'com.asprise.ocr:java-ocr-api:15.3.0.3'
     compile group: 'net.sourceforge.tess4j', name: 'tess4j', version: '4.3.0'

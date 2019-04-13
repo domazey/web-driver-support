@@ -1,6 +1,6 @@
 package com.xinaiz.wds.delegates
 
-import com.xinaiz.wds.core.ExtendedWebElement
+import com.xinaiz.wds.core.element.ExtendedWebElement
 import kotlin.reflect.KProperty
 
 class JSAttribute(private val name: String? = null){
