@@ -7,6 +7,7 @@ interface JavascriptDriverModule: DriverModule {
     val javascriptExecutor: JavascriptExecutor
 
     fun executeScript(script: String, vararg args: Any): Any?
+
     fun executeScriptAsync(script: String, vararg args: Any): Any?
 
     fun requestWindowFocus()

@@ -10,9 +10,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class CachedScreenExtendedWebElement(webElement: WebElement): ExtendedWebElement(webElement) {
+class CachedScreenExtendedWebElement(webElement: WebElement) : ExtendedWebElement(webElement) {
 
-    override fun getBufferedScreenshot(transform: ((BufferedImage)->BufferedImage)?): BufferedImage {
+    override fun getBufferedScreenshot(transform: ((BufferedImage) -> BufferedImage)?): BufferedImage {
         return cachedScreenshot
     }
 
@@ -23,7 +23,7 @@ class CachedScreenExtendedWebElement(webElement: WebElement): ExtendedWebElement
     }
 
     override fun <X> getScreenshot(target: OutputType<X>): X {
-        if(target != OutputType.FILE) {
+        if (target != OutputType.FILE) {
             throw UnsupportedOperationException()
         }
         val file = File.createTempFile(SimpleDateFormat("yyyyMMddHHmmss").format(Date()), ".png")

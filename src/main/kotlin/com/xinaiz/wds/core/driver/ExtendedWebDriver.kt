@@ -33,10 +33,6 @@ open class ExtendedWebDriver private constructor(
 
     internal val modules = mutableListOf<DriverModule>()
 
-    internal inline fun <reified T : DriverModule> getModule(): T {
-        return modules.filterIsInstance<T>().first()
-    }
-
     init {
         modules.addAll(
             listOf(
@@ -50,6 +46,10 @@ open class ExtendedWebDriver private constructor(
             )
         )
         modules.forEach { it.cast<InternalDriverModule>().attach(this) }
+    }
+
+    internal inline fun <reified T : DriverModule> getModule(): T {
+        return modules.filterIsInstance<T>().first()
     }
 
 }
