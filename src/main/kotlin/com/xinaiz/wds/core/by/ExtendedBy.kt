@@ -7,6 +7,7 @@ import com.xinaiz.wds.elements.proxy.ChildPercentRectangleWebElement
 import com.xinaiz.wds.elements.proxy.ChildPointWebElement
 import com.xinaiz.wds.elements.proxy.ChildRectangleWebElement
 import com.xinaiz.wds.util.extensions.extend
+import com.xinaiz.wds.util.extensions.quoted
 import com.xinaiz.wds.util.support.PointF
 import com.xinaiz.wds.util.support.RectangleF
 import com.xinaiz.wds.util.support.TwoPointRectangle
@@ -50,7 +51,9 @@ abstract class ExtendedBy : By() {
 
         }
 
-
+        override fun toString(): String {
+            return "By.compoundClassName: $classesText"
+        }
     }
 
     class ByPosition(private val point: Point) : By() {
@@ -69,6 +72,10 @@ abstract class ExtendedBy : By() {
                 "return document.elementFromPoint(arguments[0], arguments[1])",
                 point.x, point.y).cast()
         }
+
+        override fun toString(): String {
+            return "By.position: $point"
+        }
     }
 
     class ByChildRectangle(private val rect: Rectangle) : By() {
@@ -81,6 +88,10 @@ abstract class ExtendedBy : By() {
                 throw RuntimeException("To findBy child rectangle element, you have to findBy it via real WebElement (not driver)")
             }
             return ChildRectangleWebElement(context, rect)
+        }
+
+        override fun toString(): String {
+            return "By.childRectangle: x=${rect.x}, y=${rect.y}, width=${rect.width}, height=${rect.height}"
         }
     }
 
@@ -95,6 +106,10 @@ abstract class ExtendedBy : By() {
             }
             return ChildPercentRectangleWebElement(context, rect)
         }
+
+        override fun toString(): String {
+            return "By.childPercentRectangle: x=${rect.x}, y=${rect.y}, width=${rect.width}, height=${rect.height}"
+        }
     }
 
     class ByChildPoint(private val point: Point) : By() {
@@ -107,6 +122,10 @@ abstract class ExtendedBy : By() {
                 throw RuntimeException("To findBy child point element, you have to findBy it via real WebElement (not driver)")
             }
             return ChildPointWebElement(context, point)
+        }
+
+        override fun toString(): String {
+            return "By.childPoint: $point"
         }
     }
 
@@ -121,6 +140,10 @@ abstract class ExtendedBy : By() {
             }
             return ChildPercentPointWebElement(context, point)
         }
+
+        override fun toString(): String {
+            return "By.childPercentPoint: $point"
+        }
     }
 
     class ByAttribute(private val attr: String, private val value: String) : By() {
@@ -130,6 +153,10 @@ abstract class ExtendedBy : By() {
 
         override fun findElement(context: SearchContext): WebElement {
             return context.findElement(By.xpath("//*[@$attr = '$value']"))
+        }
+
+        override fun toString(): String {
+            return "By.attribute: $attr${if (value.isEmpty()) "" else "=${value.quoted()}"}"
         }
     }
 
@@ -163,6 +190,10 @@ abstract class ExtendedBy : By() {
             val bufferedImage = ImageIO.read(resourceClass.getResourceAsStream(resourcePath))
             val rect = context.extend().findRectangle(bufferedImage, similarity, cachedScreenshot, transform)
             return ByChildRectangle(rect).findElement(context)
+        }
+
+        override fun toString(): String {
+            return "By.template: file: $resourcePath, similarity=$similarity"
         }
     }
 

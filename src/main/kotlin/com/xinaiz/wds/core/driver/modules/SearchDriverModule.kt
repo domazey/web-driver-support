@@ -15,4 +15,7 @@ interface SearchDriverModule: DriverModule {
     val String.findAllBy: SearchDriverModuleImpl.FindAllDelegate
     val Collection<String>.findBy: SearchDriverModuleImpl.FindListDelegate
     val Collection<String>.findByOrNulls: SearchDriverModuleImpl.FindListDelegateNullable
+
+    val String.locatedBy: SearchDriverModuleImpl.LocatedDelegate
+    fun ExtendedWebElement.wait(timeOutInSeconds: Long, sleepInMillis: Long = 500, throwOnTimeout: Boolean = true): SearchDriverModuleImpl.ElementWaitOperations
 }

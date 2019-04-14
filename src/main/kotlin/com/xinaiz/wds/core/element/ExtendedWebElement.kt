@@ -108,6 +108,6 @@ open class ExtendedWebElement private constructor(
         return modules.filterIsInstance<T>().first()
     }
 
-    override fun toString(): String = this.cast<JSPropertyElementModule>().toString()
+    override fun toString(): String = jsPropertyElementModule.toString()
 }
 

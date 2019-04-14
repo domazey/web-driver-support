@@ -1,10 +1,7 @@
 package com.xinaiz.wds.core.element.modules
 
-import com.xinaiz.wds.delegates.JSMemberMethod
-import com.xinaiz.wds.delegates.JSProperty
 import com.xinaiz.wds.util.constants.AdjacentPosition
 import com.xinaiz.wds.util.constants.RelativePosition
-import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.support.Color
 
@@ -39,7 +36,7 @@ interface JSPropertyElementModule: ElementModule {
 
     val childElementCount: Int
 
-    val childNodes: Any
+    val childNodes: List<Any?>
 
     val children: List<WebElement>
 

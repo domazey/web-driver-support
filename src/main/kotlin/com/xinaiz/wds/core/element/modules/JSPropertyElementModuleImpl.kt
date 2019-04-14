@@ -54,7 +54,7 @@ class JSPropertyElementModuleImpl(private val element: WebElement)
 
     override val childElementCount: Int by JSProperty()
 
-    override val childNodes: Any by JSProperty()
+    override val childNodes: List<Any?> by JSProperty()
 
     override val children: List<WebElement> by JSProperty()
 
