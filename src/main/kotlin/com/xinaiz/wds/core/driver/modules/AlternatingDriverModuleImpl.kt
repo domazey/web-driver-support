@@ -1,14 +1,9 @@
 package com.xinaiz.wds.core.driver.modules
 
-import com.xinaiz.wds.core.ElementCreator
+import com.xinaiz.wds.core.manager.alternation.AlternationManager
 import org.openqa.selenium.*
 
 class AlternatingDriverModuleImpl(private val driver: WebDriver)
-    : AlternatingDriverModule,
-    InternalDriverModule by InternalDriverModuleImpl() {
-
-    private val elementCreator get() = ElementCreator(extendedWebDriver)
-
-    override fun create() = elementCreator
-
-}
+    : AlternatingDriverModule by AlternationManager(driver),
+    InternalDriverModule by InternalDriverModuleImpl(),
+    DriverModule

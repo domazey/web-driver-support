@@ -2,7 +2,7 @@ package com.xinaiz.wds.core.driver.modules
 
 import com.xinaiz.wds.core.driver.ExtendedWebDriver
 
-interface InternalDriverModule {
+internal interface InternalDriverModule {
     var extendedWebDriver: ExtendedWebDriver
     fun attach(extendedWebDriver: ExtendedWebDriver)
 

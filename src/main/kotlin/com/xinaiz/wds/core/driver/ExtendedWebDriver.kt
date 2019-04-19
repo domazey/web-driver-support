@@ -48,7 +48,7 @@ open class ExtendedWebDriver private constructor(
         modules.forEach { it.cast<InternalDriverModule>().attach(this) }
     }
 
-    internal inline fun <reified T : DriverModule> getModule(): T {
+    internal inline fun <reified T> getModule(): T {
         return modules.filterIsInstance<T>().first()
     }
 

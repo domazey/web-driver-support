@@ -1,8 +1,8 @@
-package com.xinaiz.wds.core.driver.modules
+package com.xinaiz.wds.core.manager.javascript
 
 import org.openqa.selenium.JavascriptExecutor
 
-interface JavascriptDriverModule: DriverModule {
+interface ExecutesJavascript {
 
     val javascriptExecutor: JavascriptExecutor
 
@@ -13,4 +13,5 @@ interface JavascriptDriverModule: DriverModule {
     fun requestWindowFocus()
 
     fun <R> runFunction(name: String, vararg args: Any): R
+
 }

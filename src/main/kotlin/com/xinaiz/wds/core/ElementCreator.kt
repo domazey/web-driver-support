@@ -1,14 +1,14 @@
 package com.xinaiz.wds.core
 
-import com.xinaiz.wds.core.driver.ExtendedWebDriver
 import com.xinaiz.wds.core.element.ExtendedWebElement
 import com.xinaiz.wds.elements.tagged.*
+import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
 
-class ElementCreator(private val extendedWebDriver: ExtendedWebDriver) {
+class ElementCreator(private val webDriver: WebDriver) {
 
     private fun <T : ExtendedWebElement> builder(tag: String, type: String?, proxyFactory: (WebElement) -> T): ElementBuilder<T> {
-        return ElementBuilder(extendedWebDriver, tag, type, proxyFactory)
+        return ElementBuilder(webDriver, tag, type, proxyFactory)
     }
 
     fun abbr() = builder(
