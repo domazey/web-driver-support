@@ -36,5 +36,7 @@ class ElementBuilder<T : ExtendedWebElement>(
         return proxyFactory(webElement)
     }
 
+    fun inParent(parent: ExtendedWebElement): T = inParent(parent.original)
+
 
 }

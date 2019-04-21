@@ -1,5 +1,6 @@
 package com.xinaiz.wds.core.element.modules
 
+import com.xinaiz.wds.core.element.ExtendedWebElement
 import com.xinaiz.wds.util.constants.AdjacentPosition
 import com.xinaiz.wds.util.constants.RelativePosition
 import org.openqa.selenium.WebElement
@@ -56,7 +57,7 @@ interface JSPropertyElementModule: ElementModule {
     @Deprecated("Event if you clone element, selenium will make it impossible to use because it's not attached to the DOM", replaceWith = ReplaceWith(""), level = DeprecationLevel.ERROR)
     fun clone(deepClone: Boolean = true): WebElement
 
-    fun cloneAndAppend(newParent: WebElement, deepClone: Boolean = true): WebElement
+    fun cloneAndAppend(newParent: WebElement, deepClone: Boolean = true): ExtendedWebElement
 
     fun comparePosition(otherElement: WebElement): List<RelativePosition>
 

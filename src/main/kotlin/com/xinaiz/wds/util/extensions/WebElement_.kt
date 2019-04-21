@@ -8,3 +8,5 @@ import org.openqa.selenium.WebElement
  */
 
 fun WebElement.extend() = ExtendedWebElement(this)
+fun Collection<WebElement>.extendAll() = map { it.extend() }
+fun Collection<WebElement?>.extendAllOrNulls() = map { it?.extend() }

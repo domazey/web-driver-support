@@ -1,5 +1,9 @@
 package com.xinaiz.wds.core.manager.action
 
+import com.xinaiz.evilkotlin.cast.cast
+import com.xinaiz.wds.core.element.ExtendedWebElement
+import com.xinaiz.wds.core.manager.search.Searches
+import org.openqa.selenium.By
 import org.openqa.selenium.Keys
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
@@ -77,6 +81,48 @@ class ActionManager(private val driver: WebDriver): ManagesActions {
             (elementSize.height * random.nextDouble()).toInt()
         ).click()
             .perform()
+    }
+
+    override fun actionChain(): ManagesActions.ActionChain = ActionChainExecutor()
+
+    inner class ActionChainExecutor: ManagesActions.ActionChain {
+
+        val actions = mutableListOf<Pair<Any, Any>>()
+
+        override fun add(located: Searches.ByContext, action: Searches.ByContext.()->Unit): ManagesActions.ActionChain {
+            actions.add(located to action)
+            return this
+        }
+
+        override fun add(located: By, action: WebElement.()->Unit): ManagesActions.ActionChain {
+            actions.add(located to action)
+            return this
+        }
+        override fun add(located: WebElement, action: WebElement.()->Unit): ManagesActions.ActionChain {
+            actions.add(located to action)
+            return this
+        }
+        override fun add(located: ExtendedWebElement, action: ExtendedWebElement.()->Unit): ManagesActions.ActionChain {
+            actions.add(located to action)
+            return this
+        }
+//        override fun add(locatedLazy: ()->WebElement, action: WebElement.()->Unit): ManagesActions.ActionChain {
+//            actions.add(locatedLazy to action)
+//            return this
+//        }
+
+        override fun perform() {
+            actions.forEach {
+                val first = it.first
+                val second = it.second
+                when(first) {
+                    is WebElement -> second.cast<WebElement.()->Unit>().invoke(first)
+                    is ExtendedWebElement -> second.cast<ExtendedWebElement.()->Unit>().invoke(first)
+                    is By -> second.cast<WebElement.()->Unit>().invoke(driver.findElement(first))
+                    is Searches.ByContext -> second.cast<Searches.ByContext.()->Unit>().invoke(first)
+                }
+            }
+        }
     }
 
 }

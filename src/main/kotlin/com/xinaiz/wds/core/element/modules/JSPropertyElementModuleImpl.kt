@@ -1,10 +1,12 @@
 package com.xinaiz.wds.core.element.modules
 
+import com.xinaiz.wds.core.element.ExtendedWebElement
 import com.xinaiz.wds.delegates.JSMemberMethod
 import com.xinaiz.wds.delegates.JSProperty
 import com.xinaiz.wds.js.*
 import com.xinaiz.wds.util.constants.AdjacentPosition
 import com.xinaiz.wds.util.constants.RelativePosition
+import com.xinaiz.wds.util.extensions.extend
 import org.openqa.selenium.*
 import org.openqa.selenium.support.Color
 
@@ -74,12 +76,12 @@ class JSPropertyElementModuleImpl(private val element: WebElement)
     @Deprecated("Event if you clone element, selenium will make it impossible to use because it's not attached to the DOM", replaceWith = ReplaceWith(""), level = DeprecationLevel.ERROR)
     override fun clone(deepClone: Boolean) = runMethod("cloneNode", deepClone) as WebElement
 
-    override fun cloneAndAppend(newParent: WebElement, deepClone: Boolean): WebElement {
-        return jsModule.runScript("""
+    override fun cloneAndAppend(newParent: WebElement, deepClone: Boolean): ExtendedWebElement {
+        return (jsModule.runScript("""
             var clone = arguments[0].cloneNode(arguments[2]);
             arguments[1].appendChild(clone);
             return clone;
-        """, element, newParent, deepClone) as WebElement
+        """, element, newParent, deepClone) as WebElement).extend()
     }
 
     override fun comparePosition(otherElement: WebElement): List<RelativePosition> {

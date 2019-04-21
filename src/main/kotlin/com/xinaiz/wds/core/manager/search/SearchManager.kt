@@ -8,6 +8,8 @@ import com.xinaiz.wds.core.element.ExtendedWebElement
 import com.xinaiz.wds.core.manager.ocr.PerformsOCR
 import com.xinaiz.wds.elements.proxy.CachedScreenExtendedWebElement
 import com.xinaiz.wds.util.extensions.extend
+import com.xinaiz.wds.util.extensions.extendAll
+import com.xinaiz.wds.util.extensions.extendAllOrNulls
 import com.xinaiz.wds.util.wait.NoThrowWebDriverWait
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
@@ -15,7 +17,9 @@ import org.openqa.selenium.WebElement
 import org.openqa.selenium.support.ui.ExpectedCondition
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
+import java.awt.Color
 import java.awt.image.BufferedImage
+import java.lang.Thread.sleep
 import java.util.function.Function
 import java.util.regex.Pattern
 
@@ -24,11 +28,11 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
     var resourceClass: Class<*> = javaClass
 
     /* Common elements */
-    override val BODY: WebElement
+    override val BODY: ExtendedWebElement
         get() = "body".findBy.tag
 
-    override fun findElementOrNull(by: By): WebElement? = tryOrNull {
-        webDriver.findElement(by)
+    override fun findElementOrNull(by: By): ExtendedWebElement? = tryOrNull {
+        webDriver.findElement(by).extend()
     }
 
     override val String.findBy: Searches.FindsOrThrows get() = FindDelegate(this@findBy)
@@ -39,6 +43,20 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
 
     override val String.locatedBy: Searches.Locates get() = LocatedDelegate(this@locatedBy)
 
+    override val String.asClassName get() = locatedBy.className
+    override val String.asCss get() = locatedBy.css
+    override val String.asId get() = locatedBy.id
+    override val String.asLink get() = locatedBy.link
+    override val String.asPartialLink get() = locatedBy.partialLink
+    override val String.asTag get() = locatedBy.tag
+    override val String.asXpath get() = locatedBy.xpath
+    override val String.asCompoundClassName get() = locatedBy.compoundClassName
+    override fun String.asAttr(value: String) = locatedBy.attr(value)
+    override val String.asValue get() = locatedBy.value
+    override fun String.asTemplate(inside: By, similarity: Double, cachedScreenshot: BufferedImage?, transform: ((BufferedImage) -> BufferedImage)?) = locatedBy.template(inside, similarity, cachedScreenshot, transform)
+
+    override fun createTemplateContext(by: By) = TemplateContext(by)
+
     override fun ExtendedWebElement.wait(timeOutInSeconds: Long, sleepInMillis: Long): Searches.ElementWaitOperations = LocatedElementWaitOperations(this.original, timeOutInSeconds, sleepInMillis)
 
     override fun ExtendedWebElement.waitOrNull(timeOutInSeconds: Long, sleepInMillis: Long): Searches.ElementWaitOperationsOrNull = LocatedElementWaitOperationsOrNull(this.original, timeOutInSeconds, sleepInMillis)
@@ -46,25 +64,30 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
      * Find single element. Throw if not found
      */
     inner class FindDelegate(private val rawData: String) : Searches.FindsOrThrows {
-        override val className: WebElement get() = webDriver.findElement(By.className(rawData))
-        override val css: WebElement get() = webDriver.findElement(By.cssSelector(rawData))
-        override val id: WebElement get() = webDriver.findElement(By.id(rawData))
-        override val link: WebElement get() = webDriver.findElement(By.linkText(rawData))
-        override val name: WebElement get() = webDriver.findElement(By.name(rawData))
-        override val partialLink: WebElement get() = webDriver.findElement(By.partialLinkText(rawData))
-        override val tag: WebElement get() = webDriver.findElement(By.tagName(rawData))
-        override val xpath: WebElement get() = webDriver.findElement(By.xpath(rawData))
-        override val compoundClassName: WebElement get() = webDriver.findElement(ExtendedBy.compoundClassName(rawData))
-        override fun attr(value: String): WebElement = webDriver.findElement(ExtendedBy.attribute(value, rawData))
-        override val value: WebElement get() = webDriver.findElement(ExtendedBy.value(rawData))
+        override val className: ExtendedWebElement get() = webDriver.findElement(By.className(rawData)).extend()
+        override val css: ExtendedWebElement get() = webDriver.findElement(By.cssSelector(rawData)).extend()
+        override val id: ExtendedWebElement get() = webDriver.findElement(By.id(rawData)).extend()
+        override val link: ExtendedWebElement get() = webDriver.findElement(By.linkText(rawData)).extend()
+        override val name: ExtendedWebElement get() = webDriver.findElement(By.name(rawData)).extend()
+        override val partialLink: ExtendedWebElement get() = webDriver.findElement(By.partialLinkText(rawData)).extend()
+        override val tag: ExtendedWebElement get() = webDriver.findElement(By.tagName(rawData)).extend()
+        override val xpath: ExtendedWebElement get() = webDriver.findElement(By.xpath(rawData)).extend()
+        override val compoundClassName: ExtendedWebElement get() = webDriver.findElement(ExtendedBy.compoundClassName(rawData)).extend()
+        override fun attr(value: String): ExtendedWebElement = webDriver.findElement(ExtendedBy.attribute(value, rawData)).extend()
+        override val value: ExtendedWebElement get() = webDriver.findElement(ExtendedBy.value(rawData)).extend()
         override fun template(inside: WebElement,
                               similarity: Double,
                               cachedScreenshot: BufferedImage?,
-                              transform: ((BufferedImage) -> BufferedImage)?): WebElement = inside.findElement(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform))
+                              transform: ((BufferedImage) -> BufferedImage)?): ExtendedWebElement = inside.findElement(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform)).extend()
+
+        override fun template(inside: ExtendedWebElement,
+                              similarity: Double,
+                              cachedScreenshot: BufferedImage?,
+                              transform: ((BufferedImage) -> BufferedImage)?): ExtendedWebElement = inside.findElement(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform)).extend()
 
         override fun template(inside: CachedScreenExtendedWebElement,
                               similarity: Double,
-                              transform: ((BufferedImage) -> BufferedImage)?): WebElement = inside.findElement(ExtendedBy.template(resourceClass, rawData, similarity, inside.getBufferedScreenshot(transform), null))
+                              transform: ((BufferedImage) -> BufferedImage)?): ExtendedWebElement = inside.findElement(ExtendedBy.template(resourceClass, rawData, similarity, inside.getBufferedScreenshot(transform), null)).extend()
 
     }
 
@@ -72,55 +95,70 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
      * Find single element. Return null if not found
      */
     inner class FindDelegateNullable(private val rawData: String) : Searches.FindsOrNull {
-        override val className: WebElement? get() = findElementOrNull(By.className(rawData))
-        override val css: WebElement? get() = findElementOrNull(By.cssSelector(rawData))
-        override val id: WebElement? get() = findElementOrNull(By.id(rawData))
-        override val link: WebElement? get() = findElementOrNull(By.linkText(rawData))
-        override val name: WebElement? get() = findElementOrNull(By.name(rawData))
-        override val partialLink: WebElement? get() = findElementOrNull(By.partialLinkText(rawData))
-        override val tag: WebElement? get() = findElementOrNull(By.tagName(rawData))
-        override val xpath: WebElement? get() = findElementOrNull(By.xpath(rawData))
-        override val compoundClassName: WebElement? get() = findElementOrNull(ExtendedBy.compoundClassName(rawData))
-        override fun attr(value: String): WebElement? = findElementOrNull(ExtendedBy.attribute(value, rawData))
-        override val value: WebElement? get() = findElementOrNull(ExtendedBy.value(rawData))
+        override val className: ExtendedWebElement? get() = findElementOrNull(By.className(rawData))
+        override val css: ExtendedWebElement? get() = findElementOrNull(By.cssSelector(rawData))
+        override val id: ExtendedWebElement? get() = findElementOrNull(By.id(rawData))
+        override val link: ExtendedWebElement? get() = findElementOrNull(By.linkText(rawData))
+        override val name: ExtendedWebElement? get() = findElementOrNull(By.name(rawData))
+        override val partialLink: ExtendedWebElement? get() = findElementOrNull(By.partialLinkText(rawData))
+        override val tag: ExtendedWebElement? get() = findElementOrNull(By.tagName(rawData))
+        override val xpath: ExtendedWebElement? get() = findElementOrNull(By.xpath(rawData))
+        override val compoundClassName: ExtendedWebElement? get() = findElementOrNull(ExtendedBy.compoundClassName(rawData))
+        override fun attr(value: String): ExtendedWebElement? = findElementOrNull(ExtendedBy.attribute(value, rawData))
+        override val value: ExtendedWebElement? get() = findElementOrNull(ExtendedBy.value(rawData))
+
         override fun template(inside: WebElement,
                               similarity: Double,
                               cachedScreenshot: BufferedImage?,
-                              transform: ((BufferedImage) -> BufferedImage)?): WebElement? = inside.extend().findElementOrNull(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform))
+                              transform: ((BufferedImage) -> BufferedImage)?): ExtendedWebElement? = inside.extend().findElementOrNull(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform))?.extend()
+
+        override fun template(inside: ExtendedWebElement,
+                              similarity: Double,
+                              cachedScreenshot: BufferedImage?,
+                              transform: ((BufferedImage) -> BufferedImage)?): ExtendedWebElement? = inside.findElementOrNull(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform))?.extend()
 
         override fun template(inside: CachedScreenExtendedWebElement,
                               similarity: Double,
-                              transform: ((BufferedImage) -> BufferedImage)?): WebElement? = inside.findElementOrNull(ExtendedBy.template(resourceClass, rawData, similarity, inside.getBufferedScreenshot(transform), null))
+                              transform: ((BufferedImage) -> BufferedImage)?): ExtendedWebElement? = inside.findElementOrNull(ExtendedBy.template(resourceClass, rawData, similarity, inside.getBufferedScreenshot(transform), null))?.extend()
     }
 
     /**
      * Find all elements. Return empty list if not found
      */
     inner class FindAllDelegate(private val rawData: String) : Searches.FindsAll {
-        override val className: List<WebElement> get() = webDriver.findElements(By.className(rawData))
-        override val css: List<WebElement> get() = webDriver.findElements(By.cssSelector(rawData))
-        override val id: List<WebElement> get() = webDriver.findElements(By.id(rawData))
-        override val link: List<WebElement> get() = webDriver.findElements(By.linkText(rawData))
-        override val name: List<WebElement> get() = webDriver.findElements(By.name(rawData))
-        override val partialLink: List<WebElement> get() = webDriver.findElements(By.partialLinkText(rawData))
-        override val tag: List<WebElement> get() = webDriver.findElements(By.tagName(rawData))
-        override val xpath: List<WebElement> get() = webDriver.findElements(By.xpath(rawData))
-        override val compoundClassName: List<WebElement> get() = webDriver.findElements(ExtendedBy.compoundClassName(rawData))
-        override fun attr(value: String): List<WebElement> = webDriver.findElements(ExtendedBy.attribute(value, rawData))
-        override val value: List<WebElement> get() = webDriver.findElements(ExtendedBy.value(rawData))
+        override val className: List<ExtendedWebElement> get() = webDriver.findElements(By.className(rawData)).extendAll()
+        override val css: List<ExtendedWebElement> get() = webDriver.findElements(By.cssSelector(rawData)).extendAll()
+        override val id: List<ExtendedWebElement> get() = webDriver.findElements(By.id(rawData)).extendAll()
+        override val link: List<ExtendedWebElement> get() = webDriver.findElements(By.linkText(rawData)).extendAll()
+        override val name: List<ExtendedWebElement> get() = webDriver.findElements(By.name(rawData)).extendAll()
+        override val partialLink: List<ExtendedWebElement> get() = webDriver.findElements(By.partialLinkText(rawData)).extendAll()
+        override val tag: List<ExtendedWebElement> get() = webDriver.findElements(By.tagName(rawData)).extendAll()
+        override val xpath: List<ExtendedWebElement> get() = webDriver.findElements(By.xpath(rawData)).extendAll()
+        override val compoundClassName: List<ExtendedWebElement> get() = webDriver.findElements(ExtendedBy.compoundClassName(rawData)).extendAll()
+        override fun attr(value: String): List<ExtendedWebElement> = webDriver.findElements(ExtendedBy.attribute(value, rawData)).extendAll()
+        override val value: List<ExtendedWebElement> get() = webDriver.findElements(ExtendedBy.value(rawData)).extendAll()
         override fun template(inside: WebElement,
                               similarity: Double,
                               cachedScreenshot: BufferedImage?,
                               transform: ((BufferedImage) -> BufferedImage)?,
                               fillColor: java.awt.Color,
                               maxResults: Int
-        ): List<WebElement> = inside.extend().findElements(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform, fillColor, maxResults))
+        ): List<ExtendedWebElement> = inside.extend().findElements(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform, fillColor, maxResults)).extendAll()
+
+        override fun template(inside: ExtendedWebElement,
+                              similarity: Double,
+                              cachedScreenshot: BufferedImage?,
+                              transform: ((BufferedImage) -> BufferedImage)?,
+                              fillColor: java.awt.Color,
+                              maxResults: Int
+        ): List<ExtendedWebElement> = inside.findElements(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform, fillColor, maxResults)).extendAll()
+
 
         override fun template(inside: CachedScreenExtendedWebElement,
                               similarity: Double,
                               transform: ((BufferedImage) -> BufferedImage)?,
                               fillColor: java.awt.Color,
-                              maxResults: Int): List<WebElement> = inside.findElements(ExtendedBy.template(resourceClass, rawData, similarity, inside.getBufferedScreenshot(transform), null, fillColor, maxResults))
+                              maxResults: Int): List<ExtendedWebElement> = inside.findElements(ExtendedBy.template(resourceClass, rawData, similarity, inside.getBufferedScreenshot(transform), null, fillColor, maxResults)).extendAll()
 
     }
 
@@ -128,17 +166,17 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
      * Find elements based on list of search values. Relation one to one. Return empty list if not found
      */
     inner class FindListDelegate(private val rawData: Collection<String>) : Searches.FindsEveryOrThrows {
-        override val className: List<WebElement> get() = rawData.map { webDriver.findElement(By.className(it)) }
-        override val css: List<WebElement> get() = rawData.map { webDriver.findElement(By.cssSelector(it)) }
-        override val id: List<WebElement> get() = rawData.map { webDriver.findElement(By.id(it)) }
-        override val link: List<WebElement> get() = rawData.map { webDriver.findElement(By.linkText(it)) }
-        override val name: List<WebElement> get() = rawData.map { webDriver.findElement(By.name(it)) }
-        override val partialLink: List<WebElement> get() = rawData.map { webDriver.findElement(By.partialLinkText(it)) }
-        override val tag: List<WebElement> get() = rawData.map { webDriver.findElement(By.tagName(it)) }
-        override val xpath: List<WebElement> get() = rawData.map { webDriver.findElement(By.xpath(it)) }
-        override val compoundClassName: List<WebElement> get() = rawData.map { webDriver.findElement(ExtendedBy.compoundClassName(it)) }
-        override fun attr(value: String): List<WebElement> = rawData.map { webDriver.findElement(ExtendedBy.attribute(value, it)) }
-        override val value: List<WebElement> get() = rawData.map { webDriver.findElement(ExtendedBy.value(it)) }
+        override val className: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(By.className(it)) }.extendAll()
+        override val css: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(By.cssSelector(it)) }.extendAll()
+        override val id: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(By.id(it)) }.extendAll()
+        override val link: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(By.linkText(it)) }.extendAll()
+        override val name: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(By.name(it)) }.extendAll()
+        override val partialLink: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(By.partialLinkText(it)) }.extendAll()
+        override val tag: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(By.tagName(it)) }.extendAll()
+        override val xpath: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(By.xpath(it)) }.extendAll()
+        override val compoundClassName: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(ExtendedBy.compoundClassName(it)) }.extendAll()
+        override fun attr(value: String): List<ExtendedWebElement> = rawData.map { webDriver.findElement(ExtendedBy.attribute(value, it)) }.extendAll()
+        override val value: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(ExtendedBy.value(it)) }.extendAll()
         // TODO: template
     }
 
@@ -146,17 +184,17 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
      * Find elements based on list of search values. Relation one to one. List might contain nulls if not found
      */
     inner class FindListDelegateNullable(private val rawData: Collection<String>) : Searches.FindsEveryOrNulls {
-        override val className: List<WebElement?> get() = rawData.map { findElementOrNull(By.className(it)) }
-        override val css: List<WebElement?> get() = rawData.map { findElementOrNull(By.cssSelector(it)) }
-        override val id: List<WebElement?> get() = rawData.map { findElementOrNull(By.id(it)) }
-        override val link: List<WebElement?> get() = rawData.map { findElementOrNull(By.linkText(it)) }
-        override val name: List<WebElement?> get() = rawData.map { findElementOrNull(By.name(it)) }
-        override val partialLink: List<WebElement?> get() = rawData.map { findElementOrNull(By.partialLinkText(it)) }
-        override val tag: List<WebElement?> get() = rawData.map { findElementOrNull(By.tagName(it)) }
-        override val xpath: List<WebElement?> get() = rawData.map { findElementOrNull(By.xpath(it)) }
-        override val compoundClassName: List<WebElement?> get() = rawData.map { findElementOrNull(ExtendedBy.compoundClassName(it)) }
-        override fun attr(value: String): List<WebElement?> = rawData.map { findElementOrNull(ExtendedBy.attribute(value, it)) }
-        override val value: List<WebElement?> get() = rawData.map { findElementOrNull(ExtendedBy.value(it)) }
+        override val className: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(By.className(it)) }
+        override val css: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(By.cssSelector(it)) }
+        override val id: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(By.id(it)) }
+        override val link: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(By.linkText(it)) }
+        override val name: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(By.name(it)) }
+        override val partialLink: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(By.partialLinkText(it)) }
+        override val tag: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(By.tagName(it)) }
+        override val xpath: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(By.xpath(it)) }
+        override val compoundClassName: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(ExtendedBy.compoundClassName(it)) }
+        override fun attr(value: String): List<ExtendedWebElement?> = rawData.map { findElementOrNull(ExtendedBy.attribute(value, it)) }
+        override val value: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(ExtendedBy.value(it)) }
 
         // TODO: template
     }
@@ -165,38 +203,41 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
      * Create element locator for future processing
      */
     inner class LocatedDelegate(private val rawData: String) : Searches.Locates {
-        override val className: Searches.PerformsLocatedOperations get() = LocatedDelegateOperations(By.className(rawData))
-        override val css: Searches.PerformsLocatedOperations get() = LocatedDelegateOperations(By.cssSelector(rawData))
-        override val id: Searches.PerformsLocatedOperations get() = LocatedDelegateOperations(By.id(rawData))
-        override val link: Searches.PerformsLocatedOperations get() = LocatedDelegateOperations(By.linkText(rawData))
-        override val name: Searches.PerformsLocatedOperations get() = LocatedDelegateOperations(By.name(rawData))
-        override val partialLink: Searches.PerformsLocatedOperations get() = LocatedDelegateOperations(By.partialLinkText(rawData))
-        override val tag: Searches.PerformsLocatedOperations get() = LocatedDelegateOperations(By.tagName(rawData))
-        override val xpath: Searches.PerformsLocatedOperations get() = LocatedDelegateOperations(By.xpath(rawData))
-        override val compoundClassName: Searches.PerformsLocatedOperations get() = LocatedDelegateOperations(ExtendedBy.compoundClassName(rawData))
-        override fun attr(value: String): Searches.PerformsLocatedOperations = LocatedDelegateOperations(ExtendedBy.attribute(value, rawData))
-        override val value: Searches.PerformsLocatedOperations get() = LocatedDelegateOperations(ExtendedBy.value(rawData))
+        override val className: Searches.ByContext get() = ByContextImpl(By.className(rawData))
+        override val css: Searches.ByContext get() = ByContextImpl(By.cssSelector(rawData))
+        override val id: Searches.ByContext get() = ByContextImpl(By.id(rawData))
+        override val link: Searches.ByContext get() = ByContextImpl(By.linkText(rawData))
+        override val name: Searches.ByContext get() = ByContextImpl(By.name(rawData))
+        override val partialLink: Searches.ByContext get() = ByContextImpl(By.partialLinkText(rawData))
+        override val tag: Searches.ByContext get() = ByContextImpl(By.tagName(rawData))
+        override val xpath: Searches.ByContext get() = ByContextImpl(By.xpath(rawData))
+        override val compoundClassName: Searches.ByContext get() = ByContextImpl(ExtendedBy.compoundClassName(rawData))
+        override fun attr(value: String): Searches.ByContext = ByContextImpl(ExtendedBy.attribute(value, rawData))
+        override val value: Searches.ByContext get() = ByContextImpl(ExtendedBy.value(rawData))
         override fun template(inside: By,
                               similarity: Double,
                               cachedScreenshot: BufferedImage?,
-                              transform: ((BufferedImage) -> BufferedImage)?): LocatedDelegateOperations = LocatedDelegateOperations(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform), inside)
+                              transform: ((BufferedImage) -> BufferedImage)?): ByContextImpl = ByContextImpl(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform), inside)
 
 //        fun template(inside: WebElement,
 //                     similarity: Double = Constants.Similarity.DEFAULT.value,
 //                     cachedScreenshot: BufferedImage? = null,
-//                     transform: ((BufferedImage) -> BufferedImage)? = null): LocatedDelegateOperations = LocatedDelegateOperations(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform), inside.extend())
+//                     transform: ((BufferedImage) -> BufferedImage)? = null): ByContextImpl = ByContextImpl(ExtendedBy.template(resourceClass, rawData, similarity, cachedScreenshot, transform), inside.extend())
 //
 //        fun template(inside: CachedScreenExtendedWebElement,
 //                     similarity: Double = Constants.Similarity.DEFAULT.value,
-//                     transform: ((BufferedImage) -> BufferedImage)? = null): LocatedDelegateOperations = LocatedDelegateOperations(ExtendedBy.template(resourceClass, rawData, similarity, inside.getBufferedScreenshot(transform), null))
+//                     transform: ((BufferedImage) -> BufferedImage)? = null): ByContextImpl = ByContextImpl(ExtendedBy.template(resourceClass, rawData, similarity, inside.getBufferedScreenshot(transform), null))
 
     }
 
-    inner class LocatedDelegateOperations(override val by: By, private val parentLocator: By? = null) : Searches.PerformsLocatedOperations {
+    inner class ByContextImpl(override val by: By, private val parentLocator: By? = null) : Searches.ByContext {
 
-        override fun find(): WebElement = webDriver.findElement(by)
-        override fun findOrNull(): WebElement? = findElementOrNull(by)
-        override fun findAll(): List<WebElement> = webDriver.findElements(by)
+        private val searchContext
+            get() = parentLocator?.let { webDriver.findElement(it) } ?: webDriver
+
+        override fun find(): WebElement = searchContext.findElement(by)
+        override fun findOrNull(): WebElement? = tryOrNull { searchContext.findElement(by) }
+        override fun findAll(): List<WebElement> = searchContext.findElements(by)
 
         override fun wait(timeOutInSeconds: Long, sleepInMillis: Long): Searches.ByWaitOperations = LocatedByWaitOperations(by, timeOutInSeconds, sleepInMillis, parentLocator)
 
@@ -204,9 +245,47 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
 
         override fun waitAndClick(timeOutInSeconds: Long, sleepInMillis: Long) = wait(timeOutInSeconds, sleepInMillis).untilPresent.click()
 
+        override fun waitUntilPresent(timeOutInSeconds: Long, sleepInMillis: Long) = wait(timeOutInSeconds, sleepInMillis).untilPresent
+
+        override fun doWhilePresent(loopDelayMs: Long, limit: Int, onPresent: (ExtendedWebElement) -> Unit) {
+            var counter = 0
+            if (limit == 0) {
+                return
+            }
+            var element = findOrNull()
+            while (element != null) {
+                onPresent(element.extend())
+                ++counter
+                if (counter == limit) {
+                    break
+                }
+                sleep(loopDelayMs)
+                element = findOrNull()
+            }
+        }
+
+        override fun doWhileDisplayed(loopDelayMs: Long, limit: Int, onPresent: (ExtendedWebElement)->Unit) {
+            var counter = 0
+            if (limit == 0) {
+                return
+            }
+            var element = findOrNull()
+            while (element != null && element.isDisplayed) {
+                onPresent(element.extend())
+                ++counter
+                if (counter == limit) {
+                    break
+                }
+                sleep(loopDelayMs)
+                element = findOrNull()
+            }
+        }
     }
 
     inner class LocatedByWaitOperations(private val by: By, private val timeOutInSeconds: Long, private val sleepInMillis: Long, private val parentLocator: By? = null) : Searches.ByWaitOperations {
+
+        private val searchContext
+            get() = parentLocator?.let { webDriver.findElement(it) } ?: webDriver
 
         override val untilPresent get() = waitUntil(presenceOfElementLocated(by))
         override val untilVisible get() = waitUntil(ExpectedConditions.visibilityOfElementLocated(by))
@@ -363,5 +442,45 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         }
 
     }
+
+    inner class TemplateContext(private val by: By) : Searches.TemplateContextAware {
+        override fun Searches.FindsOrThrows.template(similarity: Double, cachedScreenshot: BufferedImage?, transform: ((BufferedImage) -> BufferedImage)?): ExtendedWebElement {
+            val parent = webDriver.findElement(by)
+            return template(parent, similarity, cachedScreenshot, transform)
+        }
+
+        override fun Searches.FindsOrNull.template(similarity: Double, cachedScreenshot: BufferedImage?, transform: ((BufferedImage) -> BufferedImage)?): ExtendedWebElement? {
+            val parent = findElementOrNull(by) ?: return null
+            return template(parent, similarity, cachedScreenshot, transform)
+        }
+
+        override fun Searches.FindsAll.template(similarity: Double, cachedScreenshot: BufferedImage?, transform: ((BufferedImage) -> BufferedImage)?, fillColor: Color, maxResults: Int): List<ExtendedWebElement> {
+            val parent = findElementOrNull(by) ?: return listOf()
+            return template(parent, similarity, cachedScreenshot, transform, fillColor, maxResults)
+        }
+
+        override fun Searches.Locates.template(similarity: Double, cachedScreenshot: BufferedImage?, transform: ((BufferedImage) -> BufferedImage)?): Searches.ByContext {
+            return template(by, similarity, cachedScreenshot, transform)
+        }
+
+        override fun String.asTemplate(similarity: Double, cachedScreenshot: BufferedImage?, transform: ((BufferedImage) -> BufferedImage)?): Searches.ByContext {
+            return asTemplate(by, similarity, cachedScreenshot, transform)
+        }
+
+        override val Searches.FindsOrThrows.template: ExtendedWebElement get() = template()
+
+        override val Searches.FindsOrNull.template: ExtendedWebElement? get() = template()
+
+        override val Searches.FindsAll.template: List<ExtendedWebElement> get() = template()
+
+        override val Searches.Locates.template: Searches.ByContext get() = template()
+
+        override val String.asTemplate: Searches.ByContext get() = asTemplate()
+
+        override operator fun invoke(body: Searches.TemplateContextAware.() -> Unit) = body(this)
+
+
+    }
+
 
 }

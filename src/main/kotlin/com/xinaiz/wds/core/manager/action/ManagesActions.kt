@@ -1,5 +1,8 @@
 package com.xinaiz.wds.core.manager.action
 
+import com.xinaiz.wds.core.element.ExtendedWebElement
+import com.xinaiz.wds.core.manager.search.Searches
+import org.openqa.selenium.By
 import org.openqa.selenium.Keys
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.interactions.Actions
@@ -67,4 +70,16 @@ interface ManagesActions {
      * Builds and Performs [Actions.moveByOffset] then [Actions.click] at random part of WebElement
      */
     fun clickAtRandomPart(target: WebElement): Unit
+
+    fun actionChain(): ActionChain
+
+    interface ActionChain {
+        fun add(located: Searches.ByContext, action: Searches.ByContext.()->Unit): ActionChain
+        fun add(located: By, action: WebElement.()->Unit): ActionChain
+        fun add(located: WebElement, action: WebElement.()->Unit): ActionChain
+        fun add(located: ExtendedWebElement, action: ExtendedWebElement.()->Unit): ActionChain
+//        fun add(locatedLazy: ()->WebElement, action: WebElement.()->Unit): ActionChain
+        fun perform()
+    }
+
 }

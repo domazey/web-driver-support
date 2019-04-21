@@ -29,7 +29,6 @@ class WaitDriverModuleImpl(private val driver: WebDriver)
     override fun waitForPageToLoad(timeoutSeconds: Long, refreshMs: Long) {
         wait(timeoutSeconds, refreshMs).until {
             jsModule.executeScript("return document.readyState") == "complete"
-                && jsModule.executeScript("return jQuery.active == 0") == true
         }
     }
 
