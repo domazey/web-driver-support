@@ -16,7 +16,7 @@ class ExampleScenario(driver: WebDriver) : ExtendedWebDriver(driver) {
         open("https://github.com/xinaiz/web-driver-support")
 
         // Find element by className "commits" then get inner text
-        println("commits".asClassName.find().extend().trimmedText)
+        println("commits".asClassName.find().trimmedText)
         println()
 
         // Find files table, then find all table rows for it
@@ -27,7 +27,7 @@ class ExampleScenario(driver: WebDriver) : ExtendedWebDriver(driver) {
         println()
 
         // Easily get BufferedScreenshot from element
-        val screenshot = treeFiles[4].extend().getBufferedScreenshot()
+        val screenshot = treeFiles[4].getBufferedScreenshot()
 
         // Find by shortcut for Pull Requests tab and click
         "g p".asAttr("data-hotkey").waitAndClick()
@@ -68,3 +68,37 @@ master and develop are identical.
 ```
 ### Taken screenshot:
 ![Screenshot](https://i.imgur.com/KUBIwag.png)
+
+# Migration guide:
+## Search ##
+| Old syntax | New syntax |
+| --- | --- |
+| `driver.findElement(By.xxx("abc"))` | `"abc".asXxx.find()` or `"abc".findBy.xxx` |
+| `driver.findElements(By.xxx("abc"))` | `"abc".asXxx.findAll()` or `"abc".findAllBy.xxx` |
+| `try { driver.findElement(By.xxx("abc")) } catch(ex: Throwable) { null }`  | `"abc".asXxx.findOrNull()` or `"abc".findByOrNull.xxx` |
+## Child Search ##
+| Old syntax | New syntax |
+| --- | --- |
+| `webElement.findElement(By.xxx("abc"))` | `webElement.find("abc".asXxx)`|
+| `webElement.findElements(By.xxx("abc"))` | `webElement.findAll("abc".asXxx)`|
+| `try { webElement.findElement(By.xxx("abc")) } catch(ex: Throwable) { null }` | `webElement.findOrNull("abc".asXxx)`|
+## Driver Methods ##
+All `WebDriver` methods are available via `this` context. In addition, many nested method have been flattened for simplier access. For example: 
+
+| Old syntax | New syntax |
+| --- | --- |
+| `driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)` | `implicitWait = 10 to TimeUnit.SECONDS`|
+| `driver.navigate().back()` | `navigateBack()`|
+## Executing JavaScript ##
+| Old syntax | New syntax |
+| --- | --- |
+| `(driver as JavascriptExecutor).executeScript("script", args)` | `executeScript("script", args)`|
+| `(driver as JavascriptExecutor).executeAsyncScript("script", args)` | `executeScriptAsync("script", args)`|
+| `(driver as JavascriptExecutor).executeScript("functionName(arguments[0], arguments[1])", 42, "hello")` | `runFunction("functionName", 42, "hello")`|
+
+*TODO: document remaining WebElement JavaScript utility functions*
+## Waiting ##
+| Old syntax | New syntax |
+| --- | --- |
+| `WebDriverWait(webDriver, 10).until(ExpectedConditions.presenceOfElementLocated(By.xxx("abc")))` | `"abc".asXxx.wait(10).untilPresent`|
+| `try { WebDriverWait(webDriver, 10).until(ExpectedConditions.presenceOfElementLocated(By.xxx("abc"))) } catch(ex: Throwable) { } ` | `"abc".asXxx.waitOrNull(10).untilPresent`|
