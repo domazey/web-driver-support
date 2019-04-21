@@ -12,7 +12,7 @@ class AlternatingElementModuleImpl(private val element: WebElement)
     InternalElementModule by InternalElementModuleImpl() {
 
     override fun remove() {
-        jsPropertyModule.parentElement.extend().removeChild(element)
+        jsPropertyModule.parentElement.removeChild(element)
     }
 
 }

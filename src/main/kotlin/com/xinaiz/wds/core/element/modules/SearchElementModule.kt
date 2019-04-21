@@ -1,6 +1,8 @@
 package com.xinaiz.wds.core.element.modules
 
 import com.xinaiz.wds.core.by.ExtendedBy
+import com.xinaiz.wds.core.element.ExtendedWebElement
+import com.xinaiz.wds.core.manager.search.Searches
 import org.openqa.selenium.By
 import org.openqa.selenium.WebElement
 
@@ -10,4 +12,7 @@ interface SearchElementModule: ElementModule {
 
     fun findParasitic(by: ExtendedBy.ByChildRectangle): WebElement
 
+    fun find(byContext: Searches.ByContext): ExtendedWebElement
+    fun findOrNull(byContext: Searches.ByContext): ExtendedWebElement?
+    fun findAll(byContext: Searches.ByContext): List<ExtendedWebElement>
 }

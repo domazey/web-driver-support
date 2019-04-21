@@ -2,6 +2,10 @@ package com.xinaiz.wds.core.element.modules
 
 import com.xinaiz.evilkotlin.errorhandling.tryOrNull
 import com.xinaiz.wds.core.by.ExtendedBy
+import com.xinaiz.wds.core.element.ExtendedWebElement
+import com.xinaiz.wds.core.manager.search.Searches
+import com.xinaiz.wds.util.extensions.extend
+import com.xinaiz.wds.util.extensions.extendAll
 import org.openqa.selenium.*
 
 class SearchElementModuleImpl(private val element: WebElement)
@@ -18,5 +22,16 @@ class SearchElementModuleImpl(private val element: WebElement)
         return by.findElement(element)
     }
 
+    override fun find(byContext: Searches.ByContext): ExtendedWebElement {
+        return element.findElement(byContext.by).extend()
+    }
+
+    override fun findOrNull(byContext: Searches.ByContext): ExtendedWebElement? {
+        return tryOrNull { element.findElement(byContext.by) }?.extend()
+    }
+
+    override fun findAll(byContext: Searches.ByContext): List<ExtendedWebElement> {
+        return element.findElements(byContext.by).extendAll()
+    }
 
 }

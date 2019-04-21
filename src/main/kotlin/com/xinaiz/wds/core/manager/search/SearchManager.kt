@@ -9,7 +9,6 @@ import com.xinaiz.wds.core.manager.ocr.PerformsOCR
 import com.xinaiz.wds.elements.proxy.CachedScreenExtendedWebElement
 import com.xinaiz.wds.util.extensions.extend
 import com.xinaiz.wds.util.extensions.extendAll
-import com.xinaiz.wds.util.extensions.extendAllOrNulls
 import com.xinaiz.wds.util.wait.NoThrowWebDriverWait
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
@@ -51,7 +50,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
     override val String.asTag get() = locatedBy.tag
     override val String.asXpath get() = locatedBy.xpath
     override val String.asCompoundClassName get() = locatedBy.compoundClassName
-    override fun String.asAttr(value: String) = locatedBy.attr(value)
+    override fun String.asAttr(attrName: String) = locatedBy.attr(attrName)
     override val String.asValue get() = locatedBy.value
     override fun String.asTemplate(inside: By, similarity: Double, cachedScreenshot: BufferedImage?, transform: ((BufferedImage) -> BufferedImage)?) = locatedBy.template(inside, similarity, cachedScreenshot, transform)
 
@@ -73,7 +72,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         override val tag: ExtendedWebElement get() = webDriver.findElement(By.tagName(rawData)).extend()
         override val xpath: ExtendedWebElement get() = webDriver.findElement(By.xpath(rawData)).extend()
         override val compoundClassName: ExtendedWebElement get() = webDriver.findElement(ExtendedBy.compoundClassName(rawData)).extend()
-        override fun attr(value: String): ExtendedWebElement = webDriver.findElement(ExtendedBy.attribute(value, rawData)).extend()
+        override fun attr(attrName: String): ExtendedWebElement = webDriver.findElement(ExtendedBy.attribute(attrName, rawData)).extend()
         override val value: ExtendedWebElement get() = webDriver.findElement(ExtendedBy.value(rawData)).extend()
         override fun template(inside: WebElement,
                               similarity: Double,
@@ -135,7 +134,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         override val tag: List<ExtendedWebElement> get() = webDriver.findElements(By.tagName(rawData)).extendAll()
         override val xpath: List<ExtendedWebElement> get() = webDriver.findElements(By.xpath(rawData)).extendAll()
         override val compoundClassName: List<ExtendedWebElement> get() = webDriver.findElements(ExtendedBy.compoundClassName(rawData)).extendAll()
-        override fun attr(value: String): List<ExtendedWebElement> = webDriver.findElements(ExtendedBy.attribute(value, rawData)).extendAll()
+        override fun attr(attrName: String): List<ExtendedWebElement> = webDriver.findElements(ExtendedBy.attribute(attrName, rawData)).extendAll()
         override val value: List<ExtendedWebElement> get() = webDriver.findElements(ExtendedBy.value(rawData)).extendAll()
         override fun template(inside: WebElement,
                               similarity: Double,
@@ -175,7 +174,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         override val tag: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(By.tagName(it)) }.extendAll()
         override val xpath: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(By.xpath(it)) }.extendAll()
         override val compoundClassName: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(ExtendedBy.compoundClassName(it)) }.extendAll()
-        override fun attr(value: String): List<ExtendedWebElement> = rawData.map { webDriver.findElement(ExtendedBy.attribute(value, it)) }.extendAll()
+        override fun attr(attrName: String): List<ExtendedWebElement> = rawData.map { webDriver.findElement(ExtendedBy.attribute(attrName, it)) }.extendAll()
         override val value: List<ExtendedWebElement> get() = rawData.map { webDriver.findElement(ExtendedBy.value(it)) }.extendAll()
         // TODO: template
     }
@@ -193,7 +192,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         override val tag: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(By.tagName(it)) }
         override val xpath: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(By.xpath(it)) }
         override val compoundClassName: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(ExtendedBy.compoundClassName(it)) }
-        override fun attr(value: String): List<ExtendedWebElement?> = rawData.map { findElementOrNull(ExtendedBy.attribute(value, it)) }
+        override fun attr(attrName: String): List<ExtendedWebElement?> = rawData.map { findElementOrNull(ExtendedBy.attribute(attrName, it)) }
         override val value: List<ExtendedWebElement?> get() = rawData.map { findElementOrNull(ExtendedBy.value(it)) }
 
         // TODO: template
@@ -212,7 +211,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         override val tag: Searches.ByContext get() = ByContextImpl(By.tagName(rawData))
         override val xpath: Searches.ByContext get() = ByContextImpl(By.xpath(rawData))
         override val compoundClassName: Searches.ByContext get() = ByContextImpl(ExtendedBy.compoundClassName(rawData))
-        override fun attr(value: String): Searches.ByContext = ByContextImpl(ExtendedBy.attribute(value, rawData))
+        override fun attr(attrName: String): Searches.ByContext = ByContextImpl(ExtendedBy.attribute(attrName, rawData))
         override val value: Searches.ByContext get() = ByContextImpl(ExtendedBy.value(rawData))
         override fun template(inside: By,
                               similarity: Double,
@@ -235,9 +234,9 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         private val searchContext
             get() = parentLocator?.let { webDriver.findElement(it) } ?: webDriver
 
-        override fun find(): WebElement = searchContext.findElement(by)
-        override fun findOrNull(): WebElement? = tryOrNull { searchContext.findElement(by) }
-        override fun findAll(): List<WebElement> = searchContext.findElements(by)
+        override fun find(): ExtendedWebElement = searchContext.findElement(by).extend()
+        override fun findOrNull(): ExtendedWebElement? = tryOrNull { searchContext.findElement(by) }?.extend()
+        override fun findAll(): List<ExtendedWebElement> = searchContext.findElements(by).extendAll()
 
         override fun wait(timeOutInSeconds: Long, sleepInMillis: Long): Searches.ByWaitOperations = LocatedByWaitOperations(by, timeOutInSeconds, sleepInMillis, parentLocator)
 
@@ -254,7 +253,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
             }
             var element = findOrNull()
             while (element != null) {
-                onPresent(element.extend())
+                onPresent(element)
                 ++counter
                 if (counter == limit) {
                     break
@@ -271,7 +270,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
             }
             var element = findOrNull()
             while (element != null && element.isDisplayed) {
-                onPresent(element.extend())
+                onPresent(element)
                 ++counter
                 if (counter == limit) {
                     break
@@ -280,6 +279,10 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
                 element = findOrNull()
             }
         }
+
+        override fun switchContext(newParent: By?): Searches.ByContext {
+            return ByContextImpl(by, newParent)
+        }
     }
 
     inner class LocatedByWaitOperations(private val by: By, private val timeOutInSeconds: Long, private val sleepInMillis: Long, private val parentLocator: By? = null) : Searches.ByWaitOperations {
@@ -287,8 +290,8 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         private val searchContext
             get() = parentLocator?.let { webDriver.findElement(it) } ?: webDriver
 
-        override val untilPresent get() = waitUntil(presenceOfElementLocated(by))
-        override val untilVisible get() = waitUntil(ExpectedConditions.visibilityOfElementLocated(by))
+        override val untilPresent get() = waitUntil(presenceOfElementLocated(by)).extend()
+        override val untilVisible get() = waitUntil(ExpectedConditions.visibilityOfElementLocated(by)).extend()
         override val untilAllVisible get() = waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(by))
         override fun untilTextPresent(text: String) = waitUntil(ExpectedConditions.textToBePresentInElementLocated(by, text))
         override fun untilTextPresentInValue(text: String) = waitUntil(ExpectedConditions.textToBePresentInElementValue(by, text))
@@ -296,7 +299,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
 
         override val untilInvisible get() = waitUntil(ExpectedConditions.invisibilityOfElementLocated(by))
         override fun untilInvisibleWithText(text: String) = waitUntil(ExpectedConditions.invisibilityOfElementWithText(by, text))
-        override val untilClickable get() = waitUntil(ExpectedConditions.elementToBeClickable(by))
+        override val untilClickable get() = waitUntil(ExpectedConditions.elementToBeClickable(by)).extend()
         override val untilSelected get() = waitUntil(ExpectedConditions.elementToBeSelected(by))
         override fun untilSelectionState(state: Boolean) = waitUntil(ExpectedConditions.elementSelectionStateToBe(by, state))
         override fun untilAttributeValue(attribute: String, value: String) = waitUntil(ExpectedConditions.attributeToBe(by, attribute, value))
@@ -308,7 +311,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         override fun untilAttributeContains(attribute: String, containedValue: String) = waitUntil(ExpectedConditions.attributeContains(by, attribute, containedValue))
 
         override fun untilNestedVisible(childLocator: By) = waitUntil(ExpectedConditions.visibilityOfNestedElementsLocatedBy(by, childLocator))
-        override fun untilNestedPresent(childLocator: By) = waitUntil(ExpectedConditions.presenceOfNestedElementLocatedBy(by, childLocator))
+        override fun untilNestedPresent(childLocator: By) = waitUntil(ExpectedConditions.presenceOfNestedElementLocatedBy(by, childLocator)).extend()
         override fun untilAllNestedPresent(childLocator: By) = waitUntil(ExpectedConditions.presenceOfNestedElementsLocatedBy(by, childLocator))
 
         override fun untilElementScreenshot(predicate: (BufferedImage) -> Boolean) = wait().until { tryOrDefault({ predicate(webDriver.findElement(by).extend().getBufferedScreenshot()) }, false) }
@@ -341,8 +344,8 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
 
     inner class LocatedByWaitOperationsOrNull(private val by: By, private val timeOutInSeconds: Long, private val sleepInMillis: Long, private val parentLocator: By? = null) : Searches.ByWaitOperationsOrNull {
 
-        override val untilPresent get() = waitUntil(presenceOfElementLocated(by))
-        override val untilVisible get() = waitUntil(ExpectedConditions.visibilityOfElementLocated(by))
+        override val untilPresent get() = waitUntil(presenceOfElementLocated(by))?.extend()
+        override val untilVisible get() = waitUntil(ExpectedConditions.visibilityOfElementLocated(by))?.extend()
         override val untilAllVisible get() = waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(by))
         override fun untilTextPresent(text: String) = waitUntil(ExpectedConditions.textToBePresentInElementLocated(by, text))
         override fun untilTextPresentInValue(text: String) = waitUntil(ExpectedConditions.textToBePresentInElementValue(by, text))
@@ -350,7 +353,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
 
         override val untilInvisible get() = waitUntil(ExpectedConditions.invisibilityOfElementLocated(by))
         override fun untilInvisibleWithText(text: String) = waitUntil(ExpectedConditions.invisibilityOfElementWithText(by, text))
-        override val untilClickable get() = waitUntil(ExpectedConditions.elementToBeClickable(by))
+        override val untilClickable get() = waitUntil(ExpectedConditions.elementToBeClickable(by))?.extend()
         override val untilSelected get() = waitUntil(ExpectedConditions.elementToBeSelected(by))
         override fun untilSelectionState(state: Boolean) = waitUntil(ExpectedConditions.elementSelectionStateToBe(by, state))
         override fun untilAttributeValue(attribute: String, value: String) = waitUntil(ExpectedConditions.attributeToBe(by, attribute, value))
@@ -362,7 +365,7 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         override fun untilAttributeContains(attribute: String, containedValue: String) = waitUntil(ExpectedConditions.attributeContains(by, attribute, containedValue))
 
         override fun untilNestedVisible(childLocator: By) = waitUntil(ExpectedConditions.visibilityOfNestedElementsLocatedBy(by, childLocator))
-        override fun untilNestedPresent(childLocator: By) = waitUntil(ExpectedConditions.presenceOfNestedElementLocatedBy(by, childLocator))
+        override fun untilNestedPresent(childLocator: By) = waitUntil(ExpectedConditions.presenceOfNestedElementLocatedBy(by, childLocator))?.extend()
         override fun untilAllNestedPresent(childLocator: By) = waitUntil(ExpectedConditions.presenceOfNestedElementsLocatedBy(by, childLocator))
 
         override fun untilElementScreenshot(predicate: (BufferedImage) -> Boolean) = wait().until { tryOrDefault({ predicate(webDriver.findElement(by).extend().getBufferedScreenshot()) }, false) }
@@ -398,14 +401,14 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         override fun untilTextPresent(text: String) = waitUntil(ExpectedConditions.textToBePresentInElement(element, text))
         override fun untilTextPresentInValue(text: String) = waitUntil(ExpectedConditions.textToBePresentInElementValue(element, text))
         override val untilFrameAvailableAndSwitchToIt get() = waitUntil(ExpectedConditions.frameToBeAvailableAndSwitchToIt(element))
-        override val untilClickable get() = waitUntil(ExpectedConditions.elementToBeClickable(element))
+        override val untilClickable get() = waitUntil(ExpectedConditions.elementToBeClickable(element)).extend()
         override val untilSelected get() = waitUntil(ExpectedConditions.elementToBeSelected(element))
         override fun untilSelectionState(state: Boolean) = waitUntil(ExpectedConditions.elementSelectionStateToBe(element, state))
         override fun untilAttributeValue(attribute: String, value: String) = waitUntil(ExpectedConditions.attributeToBe(element, attribute, value))
         override fun untilAttributeContains(attribute: String, containedValue: String) = waitUntil(ExpectedConditions.attributeContains(element, attribute, containedValue))
 
         override fun untilNestedVisible(childLocator: By) = waitUntil(ExpectedConditions.visibilityOfNestedElementsLocatedBy(element, childLocator))
-        override fun untilNestedPresent(childLocator: By) = waitUntil(ExpectedConditions.presenceOfNestedElementLocatedBy(element, childLocator))
+        override fun untilNestedPresent(childLocator: By) = waitUntil(ExpectedConditions.presenceOfNestedElementLocatedBy(element, childLocator)).extend()
         override fun untilElementScreenshot(predicate: (BufferedImage) -> Boolean) = wait().until { predicate(element.extend().getBufferedScreenshot()) }
         override fun untilOCRText(performsOCR: PerformsOCR, predicate: (String) -> Boolean, ocrMode: OCRMode, transform: ((BufferedImage) -> BufferedImage)?) = performsOCR.run { wait().until { predicate(element.extend().doOCR(ocrMode, transform)) } }
         override fun untilBinaryOCRText(performsOCR: PerformsOCR, predicate: (String) -> Boolean, treshold: Int, ocrMode: OCRMode, transform: ((BufferedImage) -> BufferedImage)?) = performsOCR.run { wait().until { predicate(element.extend().doBinaryOCR(treshold, ocrMode, transform)) } }
@@ -423,14 +426,14 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         override fun untilTextPresent(text: String) = waitUntil(ExpectedConditions.textToBePresentInElement(element, text))
         override fun untilTextPresentInValue(text: String) = waitUntil(ExpectedConditions.textToBePresentInElementValue(element, text))
         override val untilFrameAvailableAndSwitchToIt get() = waitUntil(ExpectedConditions.frameToBeAvailableAndSwitchToIt(element))
-        override val untilClickable get() = waitUntil(ExpectedConditions.elementToBeClickable(element))
+        override val untilClickable get() = waitUntil(ExpectedConditions.elementToBeClickable(element))?.extend()
         override val untilSelected get() = waitUntil(ExpectedConditions.elementToBeSelected(element))
         override fun untilSelectionState(state: Boolean) = waitUntil(ExpectedConditions.elementSelectionStateToBe(element, state))
         override fun untilAttributeValue(attribute: String, value: String) = waitUntil(ExpectedConditions.attributeToBe(element, attribute, value))
         override fun untilAttributeContains(attribute: String, containedValue: String) = waitUntil(ExpectedConditions.attributeContains(element, attribute, containedValue))
 
         override fun untilNestedVisible(childLocator: By) = waitUntil(ExpectedConditions.visibilityOfNestedElementsLocatedBy(element, childLocator))
-        override fun untilNestedPresent(childLocator: By) = waitUntil(ExpectedConditions.presenceOfNestedElementLocatedBy(element, childLocator))
+        override fun untilNestedPresent(childLocator: By) = waitUntil(ExpectedConditions.presenceOfNestedElementLocatedBy(element, childLocator))?.extend()
         override fun untilElementScreenshot(predicate: (BufferedImage) -> Boolean) = wait().until { predicate(element.extend().getBufferedScreenshot()) }
         override fun untilOCRText(performsOCR: PerformsOCR, predicate: (String) -> Boolean, ocrMode: OCRMode, transform: ((BufferedImage) -> BufferedImage)?) = performsOCR.run { wait().until { predicate(element.extend().doOCR(ocrMode, transform)) } }
         override fun untilBinaryOCRText(performsOCR: PerformsOCR, predicate: (String) -> Boolean, treshold: Int, ocrMode: OCRMode, transform: ((BufferedImage) -> BufferedImage)?) = performsOCR.run { wait().until { predicate(element.extend().doBinaryOCR(treshold, ocrMode, transform)) } }

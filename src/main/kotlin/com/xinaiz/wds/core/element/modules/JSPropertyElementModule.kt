@@ -39,7 +39,7 @@ interface JSPropertyElementModule: ElementModule {
 
     val childNodes: List<Any?>
 
-    val children: List<WebElement>
+    val children: List<ExtendedWebElement>
 
     //TODO: not sure why, but this sets just one class of all classes concatenated by commas
     var classList: List<String>
@@ -72,7 +72,7 @@ interface JSPropertyElementModule: ElementModule {
     @Deprecated("This DOM element property returns broken data and shouldn't be used.", replaceWith = ReplaceWith(""), level = DeprecationLevel.ERROR)
     val firstChild: Any
 
-    val firstElementChild: WebElement
+    val firstElementChild: ExtendedWebElement
 
     fun focus(): Any
 
@@ -112,14 +112,14 @@ interface JSPropertyElementModule: ElementModule {
     @Deprecated("Not tested", level = DeprecationLevel.ERROR)
     var lastChild: Any
 
-    var lastElementChild: WebElement
+    var lastElementChild: ExtendedWebElement
 
     val namespaceURI: String
 
     @Deprecated("Not tested", level = DeprecationLevel.ERROR)
     var nextSibling: Any
 
-    val nextElementSibling: WebElement
+    val nextElementSibling: ExtendedWebElement
 
     val nodeName: String
 
@@ -139,21 +139,21 @@ interface JSPropertyElementModule: ElementModule {
 
     val offsetTop: Int
 
-    val ownerDocument: WebElement
+    val ownerDocument: ExtendedWebElement
 
     @Deprecated("Not tested", level = DeprecationLevel.ERROR)
     val parentNode: Any
 
-    val parentElement: WebElement
+    val parentElement: ExtendedWebElement
 
     @Deprecated("Not tested", level = DeprecationLevel.ERROR)
     val previousSibling: Any
 
     val previousElementSibling: Any
 
-    fun querySelector(selector: String): WebElement
+    fun querySelector(selector: String): ExtendedWebElement
 
-    fun querySelectorAll(selector: String): List<WebElement>
+    fun querySelectorAll(selector: String): List<ExtendedWebElement>
 
     fun removeAttribute(attribute: String): Any
 

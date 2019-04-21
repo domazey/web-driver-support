@@ -7,6 +7,7 @@ import com.xinaiz.wds.js.*
 import com.xinaiz.wds.util.constants.AdjacentPosition
 import com.xinaiz.wds.util.constants.RelativePosition
 import com.xinaiz.wds.util.extensions.extend
+import com.xinaiz.wds.util.extensions.extendAll
 import org.openqa.selenium.*
 import org.openqa.selenium.support.Color
 
@@ -58,7 +59,7 @@ class JSPropertyElementModuleImpl(private val element: WebElement)
 
     override val childNodes: List<Any?> by JSProperty()
 
-    override val children: List<WebElement> by JSProperty()
+    override val children: List<ExtendedWebElement> by JSProperty(compoundConverter = EXTENDED_ELEMENT_LIST_CONVERTER)
 
     //TODO: not sure why, but this sets just one class of all classes concatenated by commas
     override var classList: List<String> by JSProperty()
@@ -106,7 +107,7 @@ class JSPropertyElementModuleImpl(private val element: WebElement)
     @Deprecated("This DOM element property returns broken data and shouldn't be used.", replaceWith = ReplaceWith(""), level = DeprecationLevel.ERROR)
     override val firstChild: Any by JSProperty()
 
-    override val firstElementChild: WebElement by JSProperty()
+    override val firstElementChild: ExtendedWebElement by JSProperty(compoundConverter = EXTENDED_ELEMENT_CONVERTER)
 
     override fun focus() = runMethod<Any>("focus")
 
@@ -146,14 +147,14 @@ class JSPropertyElementModuleImpl(private val element: WebElement)
     @Deprecated("Not tested", level = DeprecationLevel.ERROR)
     override var lastChild: Any by JSProperty()
 
-    override var lastElementChild: WebElement by JSProperty()
+    override var lastElementChild: ExtendedWebElement by JSProperty(compoundConverter = EXTENDED_ELEMENT_CONVERTER)
 
     override val namespaceURI: String by JSProperty()
 
     @Deprecated("Not tested", level = DeprecationLevel.ERROR)
     override var nextSibling: Any by JSProperty()
 
-    override val nextElementSibling: WebElement by JSProperty()
+    override val nextElementSibling: ExtendedWebElement by JSProperty(compoundConverter = EXTENDED_ELEMENT_CONVERTER)
 
     override val nodeName: String by JSProperty()
 
@@ -173,21 +174,21 @@ class JSPropertyElementModuleImpl(private val element: WebElement)
 
     override val offsetTop: Int by JSProperty()
 
-    override val ownerDocument: WebElement by JSProperty()
+    override val ownerDocument: ExtendedWebElement by JSProperty(compoundConverter = EXTENDED_ELEMENT_CONVERTER)
 
     @Deprecated("Not tested", level = DeprecationLevel.ERROR)
     override val parentNode: Any by JSProperty()
 
-    override val parentElement: WebElement by JSProperty()
+    override val parentElement: ExtendedWebElement by JSProperty(compoundConverter = EXTENDED_ELEMENT_CONVERTER)
 
     @Deprecated("Not tested", level = DeprecationLevel.ERROR)
     override val previousSibling: Any by JSProperty()
 
     override val previousElementSibling: Any by JSProperty()
 
-    override fun querySelector(selector: String) = runMethod<WebElement>("querySelector", selector)
+    override fun querySelector(selector: String) = runMethod<WebElement>("querySelector", selector).extend()
 
-    override fun querySelectorAll(selector: String) = runMethod<List<WebElement>>("querySelectorAll", selector)
+    override fun querySelectorAll(selector: String) = runMethod<List<WebElement>>("querySelectorAll", selector).extendAll()
 
     override fun removeAttribute(attribute: String) = runMethod<Any>("removeAttribute", attribute)
 
@@ -240,4 +241,21 @@ class JSPropertyElementModuleImpl(private val element: WebElement)
             it.asHex()
         })
 
+    companion object {
+        internal val EXTENDED_ELEMENT_CONVERTER =
+            { element: Any ->
+                (element as WebElement).extend()
+            } to { element: ExtendedWebElement ->
+                element.original
+            }
+
+
+        internal val EXTENDED_ELEMENT_LIST_CONVERTER =
+            { elements: Any ->
+                (elements as List<WebElement>).extendAll()
+            } to { elements: List<ExtendedWebElement> ->
+                elements.map { it.original }
+            }
+
+    }
 }

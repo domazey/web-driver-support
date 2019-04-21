@@ -34,7 +34,7 @@ interface Searches {
     val String.asTag: ByContext
     val String.asXpath: ByContext
     val String.asCompoundClassName: ByContext
-    fun String.asAttr(value: String): ByContext
+    fun String.asAttr(attrName: String): ByContext
     val String.asValue: ByContext
     fun String.asTemplate(inside: By, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null): ByContext
 
@@ -50,7 +50,7 @@ interface Searches {
         val tag: R
         val xpath: R
         val compoundClassName: R
-        fun attr(value: String): R
+        fun attr(attrName: String): R
         val value: R
     }
 
@@ -97,24 +97,26 @@ interface Searches {
 
     interface ByContext {
         val by: By
-        fun find(): WebElement
-        fun findOrNull(): WebElement?
-        fun findAll(): List<WebElement>
+        fun find(): ExtendedWebElement
+        fun findOrNull(): ExtendedWebElement?
+        fun findAll(): List<ExtendedWebElement>
 
         fun wait(timeOutInSeconds: Long = 10, sleepInMillis: Long = 500): ByWaitOperations
         fun waitOrNull(timeOutInSeconds: Long = 10, sleepInMillis: Long = 500): ByWaitOperationsOrNull
 
         fun waitAndClick(timeOutInSeconds: Long = 10, sleepInMillis: Long = 500)
-        fun waitUntilPresent(timeOutInSeconds: Long = 10, sleepInMillis: Long = 500): WebElement
+        fun waitUntilPresent(timeOutInSeconds: Long = 10, sleepInMillis: Long = 500): ExtendedWebElement
 
         fun doWhilePresent(loopDelayMs: Long = 0, limit: Int = 20, onPresent: (ExtendedWebElement)->Unit)
 
         fun doWhileDisplayed(loopDelayMs: Long = 0, limit: Int = 20, onPresent: (ExtendedWebElement)->Unit)
+
+        fun switchContext(newParent: By?): ByContext
     }
 
     interface ByWaitOperations {
-        val untilPresent: WebElement
-        val untilVisible: WebElement
+        val untilPresent: ExtendedWebElement
+        val untilVisible: ExtendedWebElement
         val untilAllVisible: List<WebElement>
         fun untilTextPresent(text: String): Boolean
         fun untilTextPresentInValue(text: String): Boolean
@@ -122,7 +124,7 @@ interface Searches {
 
         val untilInvisible: Boolean
         fun untilInvisibleWithText(text: String): Boolean
-        val untilClickable: WebElement
+        val untilClickable: ExtendedWebElement
         val untilSelected: Boolean
         fun untilSelectionState(state: Boolean): Boolean
         fun untilAttributeValue(attribute: String, value: String): Boolean
@@ -134,7 +136,7 @@ interface Searches {
         fun untilAttributeContains(attribute: String, containedValue: String): Boolean
 
         fun untilNestedVisible(childLocator: By): List<WebElement>
-        fun untilNestedPresent(childLocator: By): WebElement
+        fun untilNestedPresent(childLocator: By): ExtendedWebElement
         fun untilAllNestedPresent(childLocator: By): List<WebElement>
 
         fun untilElementScreenshot(predicate: (BufferedImage)->Boolean): Boolean
@@ -143,8 +145,8 @@ interface Searches {
     }
 
     interface ByWaitOperationsOrNull {
-        val untilPresent: WebElement?
-        val untilVisible: WebElement?
+        val untilPresent: ExtendedWebElement?
+        val untilVisible: ExtendedWebElement?
         val untilAllVisible: List<WebElement>?
         fun untilTextPresent(text: String): Boolean?
         fun untilTextPresentInValue(text: String): Boolean?
@@ -152,7 +154,7 @@ interface Searches {
 
         val untilInvisible: Boolean?
         fun untilInvisibleWithText(text: String): Boolean?
-        val untilClickable: WebElement?
+        val untilClickable: ExtendedWebElement?
         val untilSelected: Boolean?
         fun untilSelectionState(state: Boolean): Boolean?
         fun untilAttributeValue(attribute: String, value: String): Boolean?
@@ -164,7 +166,7 @@ interface Searches {
         fun untilAttributeContains(attribute: String, containedValue: String): Boolean?
 
         fun untilNestedVisible(childLocator: By): List<WebElement>?
-        fun untilNestedPresent(childLocator: By): WebElement?
+        fun untilNestedPresent(childLocator: By): ExtendedWebElement?
         fun untilAllNestedPresent(childLocator: By): List<WebElement>?
 
         fun untilElementScreenshot(predicate: (BufferedImage)->Boolean): Boolean?
@@ -176,13 +178,13 @@ interface Searches {
         fun untilTextPresent(text: String): Boolean
         fun untilTextPresentInValue(text: String): Boolean
         val untilFrameAvailableAndSwitchToIt: WebDriver
-        val untilClickable: WebElement
+        val untilClickable: ExtendedWebElement
         val untilSelected: Boolean
         fun untilSelectionState(state: Boolean): Boolean
         fun untilAttributeValue(attribute: String, value: String): Boolean
         fun untilAttributeContains(attribute: String, containedValue: String): Boolean
         fun untilNestedVisible(childLocator: By): List<WebElement>
-        fun untilNestedPresent(childLocator: By): WebElement
+        fun untilNestedPresent(childLocator: By): ExtendedWebElement
         fun untilElementScreenshot(predicate: (BufferedImage)->Boolean): Boolean
         fun untilOCRText(performsOCR: PerformsOCR, predicate: (String)->Boolean, ocrMode: OCRMode = OCRMode.TEXT, transform: ((BufferedImage) -> BufferedImage)? = null): Boolean
         fun untilBinaryOCRText(performsOCR: PerformsOCR, predicate: (String)->Boolean, treshold: Int = 128, ocrMode: OCRMode = OCRMode.TEXT, transform: ((BufferedImage) -> BufferedImage)? = null): Boolean
@@ -192,13 +194,13 @@ interface Searches {
         fun untilTextPresent(text: String): Boolean?
         fun untilTextPresentInValue(text: String): Boolean?
         val untilFrameAvailableAndSwitchToIt: WebDriver?
-        val untilClickable: WebElement?
+        val untilClickable: ExtendedWebElement?
         val untilSelected: Boolean?
         fun untilSelectionState(state: Boolean): Boolean?
         fun untilAttributeValue(attribute: String, value: String): Boolean?
         fun untilAttributeContains(attribute: String, containedValue: String): Boolean?
         fun untilNestedVisible(childLocator: By): List<WebElement>?
-        fun untilNestedPresent(childLocator: By): WebElement?
+        fun untilNestedPresent(childLocator: By): ExtendedWebElement?
         fun untilElementScreenshot(predicate: (BufferedImage)->Boolean): Boolean?
         fun untilOCRText(performsOCR: PerformsOCR, predicate: (String)->Boolean, ocrMode: OCRMode = OCRMode.TEXT, transform: ((BufferedImage) -> BufferedImage)? = null): Boolean?
         fun untilBinaryOCRText(performsOCR: PerformsOCR, predicate: (String)->Boolean, treshold: Int = 128, ocrMode: OCRMode = OCRMode.TEXT, transform: ((BufferedImage) -> BufferedImage)? = null): Boolean?
