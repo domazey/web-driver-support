@@ -20,11 +20,14 @@ import javax.imageio.ImageIO
 
  */
 
-abstract class ExtendedBy : By() {
+abstract class ExtendedBy<D: Any> : By() {
 
+    abstract fun getData(): D
 
     // Note: Try to keep class count low, because it will lenghten calculation by O(n)
-    class ByCompoundClassName(private val classesText: String) : By() {
+    class ByCompoundClassName(private val classesText: String) : ExtendedBy<String>() {
+
+        override fun getData() = classesText
 
         override fun findElements(context: SearchContext): MutableList<WebElement> {
 
@@ -56,7 +59,10 @@ abstract class ExtendedBy : By() {
         }
     }
 
-    class ByPosition(private val point: Point) : By() {
+    class ByPosition(private val point: Point) : ExtendedBy<Point>() {
+
+        override fun getData() = point
+
         override fun findElements(context: SearchContext): List<WebElement> {
             if (context is WrapsDriver) {
                 return findElements(context.wrappedDriver)
@@ -78,7 +84,10 @@ abstract class ExtendedBy : By() {
         }
     }
 
-    class ByChildRectangle(private val rect: Rectangle) : By() {
+    class ByChildRectangle(private val rect: Rectangle) : ExtendedBy<Rectangle>() {
+
+        override fun getData() = rect
+
         override fun findElements(context: SearchContext): List<WebElement> {
             return listOf(findElement(context))
         }
@@ -95,7 +104,10 @@ abstract class ExtendedBy : By() {
         }
     }
 
-    class ByChildPercentRectangle(private val rect: RectangleF) : By() {
+    class ByChildPercentRectangle(private val rect: RectangleF) : ExtendedBy<RectangleF>() {
+
+        override fun getData() = rect
+
         override fun findElements(context: SearchContext): List<WebElement> {
             return listOf(findElement(context))
         }
@@ -112,7 +124,10 @@ abstract class ExtendedBy : By() {
         }
     }
 
-    class ByChildPoint(private val point: Point) : By() {
+    class ByChildPoint(private val point: Point) : ExtendedBy<Point>() {
+
+        override fun getData() = point
+
         override fun findElements(context: SearchContext): List<WebElement> {
             return listOf(findElement(context))
         }
@@ -129,7 +144,10 @@ abstract class ExtendedBy : By() {
         }
     }
 
-    class ByChildPercentPoint(private val point: PointF) : By() {
+    class ByChildPercentPoint(private val point: PointF) : ExtendedBy<PointF>() {
+
+        override fun getData() = point
+
         override fun findElements(context: SearchContext): List<WebElement> {
             return listOf(findElement(context))
         }
@@ -146,7 +164,10 @@ abstract class ExtendedBy : By() {
         }
     }
 
-    class ByAttribute(private val attr: String, private val value: String) : By() {
+    class ByAttribute(private val attr: String, private val value: String) : ExtendedBy<Pair<String, String>>() {
+
+        override fun getData() = attr to value
+
         override fun findElements(context: SearchContext): List<WebElement> {
             return context.findElements(By.xpath("//*[@$attr = '$value']"))
         }
@@ -166,7 +187,10 @@ abstract class ExtendedBy : By() {
                      private val cachedScreenshot: BufferedImage?,
                      private val transform: ((BufferedImage) -> BufferedImage)? = null,
                      private val fillColor: java.awt.Color = java.awt.Color.BLACK /* unused in single search */,
-                     private val maxResults: Int = 20 /* unused in single search */) : By() {
+                     private val maxResults: Int = 20 /* unused in single search */) : ExtendedBy<String>() {
+
+        override fun getData() = resourcePath // TODO: return all info
+
         override fun findElements(context: SearchContext): List<WebElement> {
             if (context !is WebElement) {
                 throw RuntimeException("To find element by template, you must use WebElement as search context")

@@ -2,10 +2,12 @@ package com.xinaiz.wds.core.manager.search
 
 import com.xinaiz.evilkotlin.errorhandling.tryOrDefault
 import com.xinaiz.evilkotlin.errorhandling.tryOrNull
+import com.xinaiz.wds.core.Constants
 import com.xinaiz.wds.core.OCRMode
 import com.xinaiz.wds.core.by.ExtendedBy
 import com.xinaiz.wds.core.element.ExtendedWebElement
 import com.xinaiz.wds.core.manager.ocr.PerformsOCR
+import com.xinaiz.wds.core.v2.core.bycontext.ByContextV2
 import com.xinaiz.wds.elements.proxy.CachedScreenExtendedWebElement
 import com.xinaiz.wds.util.extensions.extend
 import com.xinaiz.wds.util.extensions.extendAll
@@ -53,6 +55,39 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
     override fun String.asAttr(attrName: String) = locatedBy.attr(attrName)
     override val String.asValue get() = locatedBy.value
     override fun String.asTemplate(inside: By, similarity: Double, cachedScreenshot: BufferedImage?, transform: ((BufferedImage) -> BufferedImage)?) = locatedBy.template(inside, similarity, cachedScreenshot, transform)
+
+    /** Experimental start */
+    override val String._asId get() = By.id(this)._extend()
+    override val String._asClassName get() = By.className(this)._extend()
+    override val String._asCss get() = By.cssSelector(this)._extend()
+    override val String._asLink get() = By.linkText(this)._extend()
+    override val String._asName get() = By.name(this)._extend()
+    override val String._asPartialLink get() = By.partialLinkText(this)._extend()
+    override val String._asTag get() = By.tagName(this)._extend()
+    override val String._asXPath get() = By.xpath(this)._extend()
+    override val String._asCompoundClassName get() = ExtendedBy.compoundClassName(this)._extend()
+    override fun String._asAttr(attrName: String) = ExtendedBy.attribute(attrName, this)._extend()
+    override val String._asValue: ByContextV2 get() = ExtendedBy.value(this)._extend()
+
+    override fun String._asId(parentLocator: By) = By.id(this)._extend(parentLocator)
+    override fun String._asClassName(parentLocator: By) = By.className(this)._extend(parentLocator)
+    override fun String._asCss(parentLocator: By) = By.cssSelector(this)._extend(parentLocator)
+    override fun String._asLink(parentLocator: By) = By.linkText(this)._extend(parentLocator)
+    override fun String._asName(parentLocator: By) = By.name(this)._extend(parentLocator)
+    override fun String._asPartialLink(parentLocator: By) = By.partialLinkText(this)._extend(parentLocator)
+    override fun String._asTag(parentLocator: By) = By.tagName(this)._extend(parentLocator)
+    override fun String._asXPath(parentLocator: By) = By.xpath(this)._extend(parentLocator)
+    override fun String._asCompoundClassName(parentLocator: By) = ExtendedBy.compoundClassName(this)._extend(parentLocator)
+    override fun String._asAttr(parentLocator: By, attrName: String) = ExtendedBy.attribute(attrName, this)._extend(parentLocator)
+    override fun String._asValue(parentLocator: By) = ExtendedBy.value(this)._extend(parentLocator)
+    override fun String._asTemplate(parentLocator: By, similarity: Double, cachedScreenshot: BufferedImage?, transform: ((BufferedImage) -> BufferedImage)?)
+        = ExtendedBy.template(resourceClass, this, similarity, cachedScreenshot, transform)._extend(parentLocator)
+
+
+    override fun By._extend() = ByContextV2(webDriver, this)
+    override fun By._extend(parentLocator: By) = ByContextV2(webDriver, parentLocator, this)
+    /** Experimental end */
+
 
     override fun createTemplateContext(by: By) = TemplateContext(by)
 

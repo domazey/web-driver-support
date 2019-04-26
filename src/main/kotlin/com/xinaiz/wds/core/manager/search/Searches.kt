@@ -4,6 +4,7 @@ import com.xinaiz.wds.core.Constants
 import com.xinaiz.wds.core.OCRMode
 import com.xinaiz.wds.core.element.ExtendedWebElement
 import com.xinaiz.wds.core.manager.ocr.PerformsOCR
+import com.xinaiz.wds.core.v2.core.bycontext.ByContextV2
 import com.xinaiz.wds.elements.proxy.CachedScreenExtendedWebElement
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
@@ -37,6 +38,35 @@ interface Searches {
     fun String.asAttr(attrName: String): ByContext
     val String.asValue: ByContext
     fun String.asTemplate(inside: By, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null): ByContext
+
+    val String._asId: ByContextV2
+    val String._asClassName: ByContextV2
+    val String._asCss: ByContextV2
+    val String._asLink: ByContextV2
+    val String._asName: ByContextV2
+    val String._asPartialLink: ByContextV2
+    val String._asTag: ByContextV2
+    val String._asXPath: ByContextV2
+    val String._asCompoundClassName: ByContextV2
+    fun String._asAttr(attrName: String): ByContextV2
+    val String._asValue: ByContextV2
+
+    fun String._asId(parentLocator: By): ByContextV2
+    fun String._asClassName(parentLocator: By): ByContextV2
+    fun String._asCss(parentLocator: By): ByContextV2
+    fun String._asLink(parentLocator: By): ByContextV2
+    fun String._asName(parentLocator: By): ByContextV2
+    fun String._asPartialLink(parentLocator: By): ByContextV2
+    fun String._asTag(parentLocator: By): ByContextV2
+    fun String._asXPath(parentLocator: By): ByContextV2
+    fun String._asCompoundClassName(parentLocator: By): ByContextV2
+    fun String._asAttr(parentLocator: By, attrName: String): ByContextV2
+    fun String._asValue(parentLocator: By): ByContextV2
+    fun String._asTemplate(parentLocator: By, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null): ByContextV2
+
+
+    fun By._extend(): ByContextV2
+    fun By._extend(parentLocator: By): ByContextV2
 
     fun createTemplateContext(by: By): TemplateContextAware
 
