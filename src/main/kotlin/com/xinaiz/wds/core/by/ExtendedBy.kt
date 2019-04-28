@@ -25,7 +25,7 @@ abstract class ExtendedBy<D: Any> : By() {
     abstract fun getData(): D
 
     // Note: Try to keep class count low, because it will lenghten calculation by O(n)
-    class ByCompoundClassName(private val classesText: String) : ExtendedBy<String>() {
+    class ByClassNameList(private val classesText: String) : ExtendedBy<String>() {
 
         override fun getData() = classesText
 
@@ -55,7 +55,7 @@ abstract class ExtendedBy<D: Any> : By() {
         }
 
         override fun toString(): String {
-            return "By.compoundClassName: $classesText"
+            return "By.classNameList: $classesText"
         }
     }
 
@@ -181,13 +181,13 @@ abstract class ExtendedBy<D: Any> : By() {
         }
     }
 
-    class ByTemplate(private val resourceClass: Class<*>,
-                     private val resourcePath: String,
-                     private val similarity: Double,
-                     private val cachedScreenshot: BufferedImage?,
-                     private val transform: ((BufferedImage) -> BufferedImage)? = null,
-                     private val fillColor: java.awt.Color = java.awt.Color.BLACK /* unused in single search */,
-                     private val maxResults: Int = 20 /* unused in single search */) : ExtendedBy<String>() {
+    class ByResourceTemplate(private val resourceClass: Class<*>,
+                             private val resourcePath: String,
+                             private val similarity: Double,
+                             private val cachedScreenshot: BufferedImage?,
+                             private val transform: ((BufferedImage) -> BufferedImage)? = null,
+                             private val fillColor: java.awt.Color = java.awt.Color.BLACK /* unused in single search */,
+                             private val maxResults: Int = 20 /* unused in single search */) : ExtendedBy<String>() {
 
         override fun getData() = resourcePath // TODO: return all info
 
@@ -221,9 +221,46 @@ abstract class ExtendedBy<D: Any> : By() {
         }
     }
 
+    class ByBufferedImageTemplate(private val template: BufferedImage,
+                             private val similarity: Double,
+                             private val cachedScreenshot: BufferedImage?,
+                             private val transform: ((BufferedImage) -> BufferedImage)? = null,
+                             private val fillColor: java.awt.Color = java.awt.Color.BLACK /* unused in single search */,
+                             private val maxResults: Int = 20 /* unused in single search */) : ExtendedBy<BufferedImage>() {
+
+        override fun getData() = template // TODO: return all info
+
+        override fun findElements(context: SearchContext): List<WebElement> {
+            if (context !is WebElement) {
+                throw RuntimeException("To find element by template, you must use WebElement as search context")
+            }
+            val rectangles = context.extend().findRectangles(
+                template,
+                similarity,
+                cachedScreenshot,
+                transform,
+                fillColor,
+                maxResults
+            )
+            return rectangles.map { ByChildRectangle(it).findElement(context) }
+        }
+
+        override fun findElement(context: SearchContext): WebElement {
+            if (context !is WebElement) {
+                throw RuntimeException("To find element by template, you must use WebElement as search context")
+            }
+            val rect = context.extend().findRectangle(template, similarity, cachedScreenshot, transform)
+            return ByChildRectangle(rect).findElement(context)
+        }
+
+        override fun toString(): String {
+            return "By.template: bufferedImage: $template, similarity=$similarity"
+        }
+    }
+
     companion object {
-        fun compoundClassName(classesText: String): By {
-            return ByCompoundClassName(classesText)
+        fun classNameList(classesText: String): By {
+            return ByClassNameList(classesText)
         }
 
         fun position(position: Point): By {
@@ -262,10 +299,19 @@ abstract class ExtendedBy<D: Any> : By() {
                      resourcePath: String,
                      similarity: Double = Constants.Similarity.DEFAULT.value,
                      cachedScreenshot: BufferedImage? = null,
-                     transform: ((BufferedImage) -> BufferedImage)?,
+                     transform: ((BufferedImage) -> BufferedImage)? = null,
                      fillColor: java.awt.Color = java.awt.Color.BLACK,
                      maxResults: Int = 20): By {
-            return ByTemplate(resourceClass, resourcePath, similarity, cachedScreenshot, transform, fillColor, maxResults)
+            return ByResourceTemplate(resourceClass, resourcePath, similarity, cachedScreenshot, transform, fillColor, maxResults)
+        }
+
+        fun template(template: BufferedImage,
+                     similarity: Double = Constants.Similarity.DEFAULT.value,
+                     cachedScreenshot: BufferedImage? = null,
+                     transform: ((BufferedImage) -> BufferedImage)? = null,
+                     fillColor: java.awt.Color = java.awt.Color.BLACK,
+                     maxResults: Int = 20): By {
+            return ByBufferedImageTemplate(template, similarity, cachedScreenshot, transform, fillColor, maxResults)
         }
 
         fun value(rawData: String): By {

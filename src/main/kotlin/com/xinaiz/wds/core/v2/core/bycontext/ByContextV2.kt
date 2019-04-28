@@ -9,8 +9,9 @@ import com.xinaiz.wds.util.extensions.extend
 import com.xinaiz.wds.util.extensions.extendAll
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
+import org.openqa.selenium.WebElement
 
-class ByContextV2 {
+open class ByContextV2 {
 
     private val searchType: SearchType
     private val searchDriver: WebDriver
@@ -19,7 +20,8 @@ class ByContextV2 {
 
     enum class SearchType {
         DRIVER,
-        PARENT_ELEMENT,
+        PARENT_ELEMENT_LOCATOR,
+        PARENT_ELEMENT
     }
 
     constructor(driver: WebDriver, by: By) {
@@ -30,15 +32,23 @@ class ByContextV2 {
     }
 
     constructor(driver: WebDriver, parentLocator: By, by: By) {
-        searchType = SearchType.PARENT_ELEMENT
+        searchType = SearchType.PARENT_ELEMENT_LOCATOR
         searchParent = parentLocator
+        searchDriver = driver
+        targetBy = by
+    }
+
+    constructor(driver: WebDriver, parentElement: WebElement, by: By) {
+        searchType = SearchType.PARENT_ELEMENT
+        searchParent = parentElement
         searchDriver = driver
         targetBy = by
     }
 
     private fun getSearchContext() = when (searchType) {
         ByContextV2.SearchType.DRIVER -> searchParent as WebDriver
-        ByContextV2.SearchType.PARENT_ELEMENT -> searchDriver.findElement(searchParent as By)
+        ByContextV2.SearchType.PARENT_ELEMENT_LOCATOR -> searchDriver.findElement(searchParent as By)
+        ByContextV2.SearchType.PARENT_ELEMENT -> searchParent as WebElement
     }
 
     fun unwrap() = targetBy
@@ -47,9 +57,18 @@ class ByContextV2 {
     fun findOrNull(): ExtendedWebElement? = tryOrNull { tryOrNull { getSearchContext() }?.findElement(targetBy)?.extend() }
     fun findAll(): List<ExtendedWebElement> = getSearchContext().findElements(targetBy).extendAll()
 
-    fun wait(seconds: Long = 10, refreshMs: Long = 500) = WaitingThrowingByContextV2(searchDriver, searchParent, targetBy, seconds, refreshMs)
+    open fun wait(seconds: Long = 10, refreshMs: Long = 500) = WaitingThrowingByContextV2(searchDriver, searchParent, targetBy, seconds, refreshMs)
 
     fun click() = find().click()
+    fun type(vararg keysToSend: CharSequence) = find().type(*keysToSend)
+    val text get() = find().text
+}
+
+class CacheByContextV2(driver: WebDriver, parentElement: WebElement, by: By): ByContextV2(driver, parentElement, by) {
+
+    @Deprecated(level = DeprecationLevel.ERROR, message = "Wait operations on cached screen don't make sense.")
+    override fun wait(seconds: Long, refreshMs: Long): WaitingThrowingByContextV2
+        = throw RuntimeException("Wait operations on cached screen don't make sense.")
 
 }
 
@@ -64,6 +83,8 @@ class WaitingThrowingByContextV2(private val driver: WebDriver, private val sear
     fun untilPresent() = wait.until(SearchContextConditions.presenceOfElementLocated(by))!!.extend()
     fun untilVisible() = wait.until(SearchContextConditions.visibilityOfElementLocated(by))!!.extend()
     fun untilClickable() = wait.until(SearchContextConditions.elementToBeClickable(by))!!.extend()
+    fun untilTextPresent(text: String) = wait.until(SearchContextConditions.textToBePresentInElementLocated(by, text))!!.extend()
+    fun untilFrameAvailableAndSwithToIt() = wait.until(SearchContextConditions.frameToBeAvailableAndSwitchToIt(by))
 
     fun find(): ExtendedWebElement = untilPresent()
 
@@ -80,6 +101,7 @@ class WaitingNullableByContextV2(private val driver: WebDriver, private val sear
     fun untilPresent() = wait.until(SearchContextConditions.presenceOfElementLocated(by))?.extend()
     fun untilVisible() = wait.until(SearchContextConditions.visibilityOfElementLocated(by))?.extend()
     fun untilClickable() = wait.until(SearchContextConditions.elementToBeClickable(by))?.extend()
+    fun untilTextPresent(text: String) = wait.until(SearchContextConditions.textToBePresentInElementLocated(by, text))?.extend()
 
     fun find(): ExtendedWebElement? = untilPresent()
 

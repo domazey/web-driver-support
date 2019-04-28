@@ -3,23 +3,23 @@ package com.xinaiz.wds.core.v2.core.wait
 import com.google.common.base.Joiner
 import com.xinaiz.wds.core.v2.core.util.impossible
 import org.openqa.selenium.*
-
-import java.util.Arrays
-import java.util.Optional
 import java.util.logging.Level
 import java.util.logging.Logger
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /**
  * Canned [SearchContextCondition]s which are generally useful within webdriver tests.
  */
+
+// Second argument can be WebDriver itself or parent element By locator
+typealias SearchInput = Pair<WebDriver, Any>
+
 object SearchContextConditions {
 
     private val log = Logger.getLogger(SearchContextConditions::class.java.name)
 
     fun presenceOfElementLocated(locator: By) = object : SearchContextCondition<WebElement> {
-        override fun apply(input: Pair<WebDriver, Any>?): WebElement? = findElement(locator, input)
+        override fun apply(input: SearchInput?): WebElement? = findElement(locator, input)
 
         override fun toString(): String {
             return "presence of element located by: $locator"
@@ -27,7 +27,7 @@ object SearchContextConditions {
     }
 
     fun visibilityOfElementLocated(locator: By) = object : SearchContextCondition<WebElement> {
-        override fun apply(input: Pair<WebDriver, Any>?): WebElement? {
+        override fun apply(input: SearchInput?): WebElement? {
             return try {
                 elementIfVisible(findElement(locator, input))
             } catch (e: StaleElementReferenceException) {
@@ -42,7 +42,7 @@ object SearchContextConditions {
     }
 
     fun visibilityOfAllElementsLocatedBy(locator: By) = object : SearchContextCondition<List<WebElement>> {
-        override fun apply(input: Pair<WebDriver, Any>?): List<WebElement>? {
+        override fun apply(input: SearchInput?): List<WebElement>? {
             val elements = findElements(locator, input)
             for (element in elements) {
                 if (!element.isDisplayed) {
@@ -62,7 +62,7 @@ object SearchContextConditions {
     }
 
     fun presenceOfAllElementsLocatedBy(locator: By) = object : SearchContextCondition<List<WebElement>> {
-        override fun apply(input: Pair<WebDriver, Any>?): List<WebElement>? {
+        override fun apply(input: SearchInput?): List<WebElement>? {
             val elements = findElements(locator, input)
             return if (elements.isNotEmpty()) elements else null
         }
@@ -72,27 +72,11 @@ object SearchContextConditions {
         }
     }
 
-    fun textToBePresentInElement(element: WebElement, text: String) = object : SearchContextCondition<Boolean> {
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean? {
+    fun textToBePresentInElementLocated(locator: By, text: String) = object : SearchContextCondition<WebElement> {
+        override fun apply(input: SearchInput?): WebElement? {
             try {
-                val elementText = element.text
-                return elementText.contains(text)
-            } catch (e: StaleElementReferenceException) {
-                return null
-            }
-
-        }
-
-        override fun toString(): String {
-            return String.format("text ('%s') to be present in element %s", text, element)
-        }
-    }
-
-    fun textToBePresentInElementLocated(locator: By, text: String) = object : SearchContextCondition<Boolean> {
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean? {
-            try {
-                val elementText = findElement(locator, input).text
-                return elementText.contains(text)
+                val element = findElement(locator, input)
+                return if (element.text.contains(text)) element else null
             } catch (e: StaleElementReferenceException) {
                 return null
             }
@@ -105,24 +89,8 @@ object SearchContextConditions {
         }
     }
 
-    fun textToBePresentInElementValue(element: WebElement, text: String) = object : SearchContextCondition<Boolean> {
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean? {
-            try {
-                val elementText = element.getAttribute("value")
-                return elementText?.contains(text) ?: false
-            } catch (e: StaleElementReferenceException) {
-                return null
-            }
-
-        }
-
-        override fun toString(): String {
-            return String.format("text ('%s') to be the value of element %s", text, element)
-        }
-    }
-
     fun textToBePresentInElementValue(locator: By, text: String) = object : SearchContextCondition<Boolean> {
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean? {
+        override fun apply(input: SearchInput?): Boolean? {
             return try {
                 val elementText = findElement(locator, input).getAttribute("value")
                 elementText?.contains(text) ?: false
@@ -139,7 +107,7 @@ object SearchContextConditions {
     }
 
     fun invisibilityOfElementLocated(locator: By) = object : SearchContextCondition<Boolean> {
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean {
+        override fun apply(input: SearchInput?): Boolean {
             try {
                 return !findElement(locator, input).isDisplayed
             } catch (e: NoSuchElementException) {
@@ -160,7 +128,7 @@ object SearchContextConditions {
     }
 
     fun invisibilityOfElementWithText(locator: By, text: String) = object : SearchContextCondition<Boolean> {
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean {
+        override fun apply(input: SearchInput?): Boolean {
             try {
                 return findElement(locator, input).text != text
             } catch (e: NoSuchElementException) {
@@ -183,7 +151,7 @@ object SearchContextConditions {
     }
 
     fun elementToBeClickable(locator: By) = object : SearchContextCondition<WebElement> {
-        override fun apply(input: Pair<WebDriver, Any>?): WebElement? {
+        override fun apply(input: SearchInput?): WebElement? {
             val element = visibilityOfElementLocated(locator).apply(input)
             try {
                 return if (element != null && element.isEnabled) {
@@ -203,7 +171,7 @@ object SearchContextConditions {
     fun elementToBeSelected(locator: By) = elementSelectionStateToBe(locator, true)
 
     fun elementSelectionStateToBe(locator: By, selected: Boolean) = object : SearchContextCondition<Boolean> {
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean? {
+        override fun apply(input: SearchInput?): Boolean? {
             try {
                 val element = findElement(locator, input)
                 return element.isSelected == selected
@@ -220,7 +188,7 @@ object SearchContextConditions {
     }
 
     fun not(condition: SearchContextCondition<*>) = object : SearchContextCondition<Boolean> {
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean {
+        override fun apply(input: SearchInput?): Boolean {
             val result = condition.apply(input)
             return result == null || result == java.lang.Boolean.FALSE
         }
@@ -230,13 +198,14 @@ object SearchContextConditions {
         }
     }
 
-    private fun resolveSearchContext(input: Pair<WebDriver, Any>?) = when (input!!.second) {
+    private fun resolveSearchContext(input: SearchInput?) = when (input!!.second) {
         is By -> input.first.findElement(input.second as By)
         is WebDriver -> input.first
+        is WebElement -> input.second as WebElement
         else -> impossible()
     }
 
-    private fun findElement(by: By, input: Pair<WebDriver, Any>?): WebElement {
+    private fun findElement(by: By, input: SearchInput?): WebElement {
         try {
             val searchContext = resolveSearchContext(input)
             return searchContext.findElements(by).stream().findFirst().orElseThrow { NoSuchElementException("Cannot locate an element using $by") }
@@ -250,7 +219,7 @@ object SearchContextConditions {
 
     }
 
-    private fun findElements(by: By, input: Pair<WebDriver, Any>?): List<WebElement> {
+    private fun findElements(by: By, input: SearchInput?): List<WebElement> {
         try {
             val searchContext = resolveSearchContext(input)
             return searchContext.findElements(by)
@@ -265,7 +234,7 @@ object SearchContextConditions {
     fun attributeToBe(locator: By, attribute: String, value: String) = object : SearchContextCondition<Boolean> {
         private var currentValue: String? = null
 
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean {
+        override fun apply(input: SearchInput?): Boolean {
             val element = findElement(locator, input)
             currentValue = element.getAttribute(attribute)
             if (currentValue == null || currentValue!!.isEmpty()) {
@@ -279,15 +248,16 @@ object SearchContextConditions {
         }
     }
 
-    fun textToBe(locator: By, value: String) = object : SearchContextCondition<Boolean> {
+    fun textToBe(locator: By, value: String) = object : SearchContextCondition<WebElement> {
         private var currentValue: String? = null
 
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean {
+        override fun apply(input: SearchInput?): WebElement? {
             try {
-                currentValue = findElement(locator, input).text
-                return currentValue == value
+                val element = findElement(locator, input)
+                currentValue = element.text
+                return if (currentValue == value) element else null
             } catch (e: Exception) {
-                return false
+                return null
             }
 
         }
@@ -297,15 +267,16 @@ object SearchContextConditions {
         }
     }
 
-    fun textMatches(locator: By, pattern: Pattern) = object : SearchContextCondition<Boolean> {
+    fun textMatches(locator: By, pattern: Pattern) = object : SearchContextCondition<WebElement> {
         private var currentValue: String? = null
 
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean {
+        override fun apply(input: SearchInput?): WebElement? {
             try {
-                currentValue = findElement(locator, input).text
-                return pattern.matcher(currentValue!!).find()
+                val element = findElement(locator, input)
+                currentValue = element.text
+                return if (pattern.matcher(currentValue!!).find()) element else null
             } catch (e: Exception) {
-                return false
+                return null
             }
 
         }
@@ -320,7 +291,7 @@ object SearchContextConditions {
     fun numberOfElementsToBeMoreThan(locator: By, number: Int) = object : SearchContextCondition<List<WebElement>> {
         private var currentNumber: Int? = 0
 
-        override fun apply(input: Pair<WebDriver, Any>?): List<WebElement>? {
+        override fun apply(input: SearchInput?): List<WebElement>? {
             val elements = findElements(locator, input)
             currentNumber = elements.size
             return if (currentNumber!! > number) elements else null
@@ -335,7 +306,7 @@ object SearchContextConditions {
     fun numberOfElementsToBeLessThan(locator: By, number: Int) = object : SearchContextCondition<List<WebElement>> {
         private var currentNumber: Int? = 0
 
-        override fun apply(input: Pair<WebDriver, Any>?): List<WebElement>? {
+        override fun apply(input: SearchInput?): List<WebElement>? {
             val elements = findElements(locator, input)
             currentNumber = elements.size
             return if (currentNumber!! < number) elements else null
@@ -350,7 +321,7 @@ object SearchContextConditions {
     fun numberOfElementsToBe(locator: By, number: Int) = object : SearchContextCondition<List<WebElement>> {
         private var currentNumber: Int? = 0
 
-        override fun apply(input: Pair<WebDriver, Any>?): List<WebElement>? {
+        override fun apply(input: SearchInput?): List<WebElement>? {
             val elements = findElements(locator, input)
             currentNumber = elements.size
             return if (currentNumber == number) elements else null
@@ -362,8 +333,23 @@ object SearchContextConditions {
         }
     }
 
+    fun frameToBeAvailableAndSwitchToIt(locator: By) = object: SearchContextCondition<WebDriver> {
+
+        override fun apply(input: SearchInput?): WebDriver? {
+            return try {
+                input!!.first.switchTo().frame(findElement(locator, input))
+            } catch (e: NoSuchFrameException) {
+                null
+            }
+        }
+
+        override fun toString(): String {
+            return "frame to be available: $locator"
+        }
+    }
+
     fun or(vararg conditions: SearchContextCondition<*>) = object : SearchContextCondition<Boolean> {
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean {
+        override fun apply(input: SearchInput?): Boolean {
             var lastException: RuntimeException? = null
             for (condition in conditions) {
                 try {
@@ -396,7 +382,7 @@ object SearchContextConditions {
     }
 
     fun and(vararg conditions: SearchContextCondition<*>) = object : SearchContextCondition<Boolean> {
-        override fun apply(input: Pair<WebDriver, Any>?): Boolean {
+        override fun apply(input: SearchInput?): Boolean {
             for (condition in conditions) {
                 val result = condition.apply(input)
 

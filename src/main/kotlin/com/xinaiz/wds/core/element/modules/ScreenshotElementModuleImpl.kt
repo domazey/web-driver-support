@@ -1,6 +1,8 @@
 package com.xinaiz.wds.core.element.modules
 
 import com.xinaiz.wds.elements.proxy.CachedScreenExtendedWebElement
+import com.xinaiz.wds.elements.proxy.ScreenCache
+import com.xinaiz.wds.util.extensions.extend
 import net.sourceforge.tess4j.util.ImageHelper
 import org.apache.commons.io.FileUtils
 import org.openqa.selenium.*
@@ -54,5 +56,9 @@ class ScreenshotElementModuleImpl(private val element: WebElement)
 
     override fun cacheScreen(): CachedScreenExtendedWebElement {
         return CachedScreenExtendedWebElement(element)
+    }
+
+    override fun cacheScreenV2(): ScreenCache {
+        return ScreenCache(element.extend())
     }
 }

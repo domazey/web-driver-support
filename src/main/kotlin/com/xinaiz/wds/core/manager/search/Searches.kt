@@ -5,7 +5,10 @@ import com.xinaiz.wds.core.OCRMode
 import com.xinaiz.wds.core.element.ExtendedWebElement
 import com.xinaiz.wds.core.manager.ocr.PerformsOCR
 import com.xinaiz.wds.core.v2.core.bycontext.ByContextV2
+import com.xinaiz.wds.core.v2.core.bycontext.CacheByContextV2
+import com.xinaiz.wds.core.v2.core.bycontext.WaitingThrowingByContextV2
 import com.xinaiz.wds.elements.proxy.CachedScreenExtendedWebElement
+import com.xinaiz.wds.elements.proxy.ScreenCache
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
@@ -34,7 +37,7 @@ interface Searches {
     val String.asPartialLink: ByContext
     val String.asTag: ByContext
     val String.asXpath: ByContext
-    val String.asCompoundClassName: ByContext
+    val String.asClassNameList: ByContext
     fun String.asAttr(attrName: String): ByContext
     val String.asValue: ByContext
     fun String.asTemplate(inside: By, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null): ByContext
@@ -47,9 +50,11 @@ interface Searches {
     val String._asPartialLink: ByContextV2
     val String._asTag: ByContextV2
     val String._asXPath: ByContextV2
-    val String._asCompoundClassName: ByContextV2
+    val String._asClassNameList: ByContextV2
     fun String._asAttr(attrName: String): ByContextV2
     val String._asValue: ByContextV2
+//    val String._asTemplate: ByContextV2
+//    val BufferedImage._asTemplate: ByContextV2
 
     fun String._asId(parentLocator: By): ByContextV2
     fun String._asClassName(parentLocator: By): ByContextV2
@@ -59,16 +64,39 @@ interface Searches {
     fun String._asPartialLink(parentLocator: By): ByContextV2
     fun String._asTag(parentLocator: By): ByContextV2
     fun String._asXPath(parentLocator: By): ByContextV2
-    fun String._asCompoundClassName(parentLocator: By): ByContextV2
+    fun String._asClassNameList(parentLocator: By): ByContextV2
     fun String._asAttr(parentLocator: By, attrName: String): ByContextV2
     fun String._asValue(parentLocator: By): ByContextV2
-    fun String._asTemplate(parentLocator: By, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null): ByContextV2
+    fun String._asTemplate(parentLocator: By, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): ByContextV2
+    fun BufferedImage._asTemplate(parentLocator: By, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): ByContextV2
+    fun String._asTemplate(screenCache: ScreenCache, similarity: Double = Constants.Similarity.DEFAULT.value, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): CacheByContextV2
+    fun BufferedImage._asTemplate(screenCache: ScreenCache, similarity: Double = Constants.Similarity.DEFAULT.value, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): CacheByContextV2
 
+    fun String._asId(parentByContext: ByContextV2): ByContextV2 = _asId(parentByContext.unwrap())
+    fun String._asClassName(parentByContext: ByContextV2): ByContextV2 = _asClassName(parentByContext.unwrap())
+    fun String._asCss(parentByContext: ByContextV2): ByContextV2 = _asCss(parentByContext.unwrap())
+    fun String._asLink(parentByContext: ByContextV2): ByContextV2 = _asLink(parentByContext.unwrap())
+    fun String._asName(parentByContext: ByContextV2): ByContextV2 = _asName(parentByContext.unwrap())
+    fun String._asPartialLink(parentByContext: ByContextV2): ByContextV2 = _asPartialLink(parentByContext.unwrap())
+    fun String._asTag(parentByContext: ByContextV2): ByContextV2 = _asTag(parentByContext.unwrap())
+    fun String._asXPath(parentByContext: ByContextV2): ByContextV2 = _asXPath(parentByContext.unwrap())
+    fun String._asClassNameList(parentByContext: ByContextV2): ByContextV2 = _asClassNameList(parentByContext.unwrap())
+    fun String._asAttr(parentByContext: ByContextV2, attrName: String): ByContextV2 = _asAttr(parentByContext.unwrap(), attrName)
+    fun String._asValue(parentByContext: ByContextV2): ByContextV2 = _asValue(parentByContext.unwrap())
+    fun String._asTemplate(parentByContext: ByContextV2, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): ByContextV2
+        = _asTemplate(parentByContext.unwrap(), similarity, cachedScreenshot, transform, fillColor, maxResults)
+    fun BufferedImage._asTemplate(parentByContext: ByContextV2, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): ByContextV2
+        = _asTemplate(parentByContext.unwrap(), similarity, cachedScreenshot, transform, fillColor, maxResults)
 
     fun By._extend(): ByContextV2
     fun By._extend(parentLocator: By): ByContextV2
+    fun By._extend(parentElement: WebElement): ByContextV2
+    fun By._extend(parentElement: ExtendedWebElement): ByContextV2
+    fun By._extendCached(parentElement: WebElement): CacheByContextV2
+    fun By._extendCached(parentElement: ExtendedWebElement): CacheByContextV2
 
     fun createTemplateContext(by: By): TemplateContextAware
+    fun createParentContext(by: By): ParentByContextAware
 
     interface GenericSearchMethodList<R : Any> {
         val className: R
@@ -79,7 +107,7 @@ interface Searches {
         val partialLink: R
         val tag: R
         val xpath: R
-        val compoundClassName: R
+        val classNameList: R
         fun attr(attrName: String): R
         val value: R
     }
@@ -93,7 +121,7 @@ interface Searches {
         val partialLink: R?
         val tag: R?
         val xpath: R?
-        val compoundClassName: R?
+        val classNameList: R?
         fun attr(value: String): R?
         val value: R?
     }
@@ -251,4 +279,69 @@ interface Searches {
 
         operator fun invoke(body: TemplateContextAware.()->Unit)
     }
+
+    interface ParentByContextAware {
+        val String._asId: ByContextV2
+        val String._asClassName: ByContextV2
+        val String._asCss: ByContextV2
+        val String._asLink: ByContextV2
+        val String._asName: ByContextV2
+        val String._asPartialLink: ByContextV2
+        val String._asTag: ByContextV2
+        val String._asXPath: ByContextV2
+        val String._asClassNameList: ByContextV2
+        fun String._asAttr(attrName: String): ByContextV2
+        val String._asValue: ByContextV2
+        val String._asTemplate: ByContextV2
+        val BufferedImage._asTemplate: ByContextV2
+
+        fun searchById(body: DefaultSearchMethodAware.Id.()->Unit)
+        fun searchByName(body: DefaultSearchMethodAware.Name.()->Unit)
+        fun searchByTemplate(body: DefaultSearchMethodAware.Template.()->Unit)
+    }
+
+    fun withParentContext(screenCache: ScreenCache, body: ScreenCacheSearchContextAware.()->Unit)
+    fun withParentContext(parentBy: By, body: SearchManager.ParentLocatorByContext.()->Unit)
+    fun withParentContext(parentBy: ByContextV2, body: SearchManager.ParentLocatorByContext.()->Unit)
+
+    interface ScreenCacheSearchContextAware {
+
+        fun String.unwrap(): By
+
+        fun String.find(): ExtendedWebElement
+        fun String.findOrNull(): ExtendedWebElement?
+        fun String.findAll(): List<ExtendedWebElement>
+
+        //fun String.wait(seconds: Long = 10, refreshMs: Long = 500): WaitingThrowingByContextV2
+
+        fun String.click()
+
+        val String._asTemplate: CacheByContextV2 get() = _asTemplate()
+//        val BufferedImage._asTemplate: CacheByContextV2
+        fun String._asTemplate(similarity: Double = Constants.Similarity.DEFAULT.value, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): CacheByContextV2
+        fun BufferedImage._asTemplate(similarity: Double = Constants.Similarity.DEFAULT.value, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): CacheByContextV2
+    }
+
+    interface CommonPostSearchActions {
+        fun String.unwrap(): By
+
+        fun String.find(): ExtendedWebElement
+        fun String.findOrNull(): ExtendedWebElement?
+        fun String.findAll(): List<ExtendedWebElement>
+
+        fun String.wait(seconds: Long = 10, refreshMs: Long = 500): WaitingThrowingByContextV2
+
+        fun String.click()
+    }
+
+    interface DefaultSearchMethodAware: CommonPostSearchActions {
+        interface Id : DefaultSearchMethodAware
+        interface Name : DefaultSearchMethodAware
+        interface Template : DefaultSearchMethodAware
+
+        // TODO: remaining methods
+    }
+
+    fun searchById(body: DefaultSearchMethodAware.Id.()->Unit)
+    fun searchByName(body: DefaultSearchMethodAware.Name.()->Unit)
 }

@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage
 
 interface TemplateMatchingElementModule: ElementModule {
 
+    val templateMatcher: TemplateMatcher
+
     fun findRectangle(template: BufferedImage,
                       similarity: Double = 0.8,
                       cachedScreenshot: BufferedImage? = null,
