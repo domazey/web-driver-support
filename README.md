@@ -1,3 +1,4 @@
+[![](https://jitpack.io/v/xinaiz/web-driver-support.svg)](https://jitpack.io/#xinaiz/web-driver-support)
 # Web Driver Support
 WebDriver utility library for Kotlin which encapsulates common logic into simple syntax.
 * Exclude WebDriver reference from code - of course we use WebDriver, no need to write it every time.
