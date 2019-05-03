@@ -54,11 +54,7 @@ class ScreenshotElementModuleImpl(private val element: WebElement)
         FileUtils.copyFile(fileScreenShot, newFile)
     }
 
-    override fun cacheScreen(): CachedScreenExtendedWebElement {
-        return CachedScreenExtendedWebElement(element)
-    }
-
-    override fun cacheScreenV2(): ScreenCache {
+    override fun cacheScreen(): ScreenCache {
         return ScreenCache(element.extend())
     }
 }

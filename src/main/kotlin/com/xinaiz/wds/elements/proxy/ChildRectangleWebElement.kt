@@ -1,5 +1,6 @@
 package com.xinaiz.wds.elements.proxy
 
+import com.xinaiz.wds.core.by.ExtendedBy
 import com.xinaiz.wds.util.extensions.center
 import com.xinaiz.wds.util.extensions.extend
 import com.xinaiz.wds.util.extensions.getSubimage
@@ -23,19 +24,19 @@ open class ChildRectangleWebElement(val host: WebElement, val rectangle: Rectang
     }
 
     override fun isDisplayed(): Boolean {
-        throw UnsupportedOperationException()
+        return host.isDisplayed
     }
 
     override fun clear() {
-        throw UnsupportedOperationException()
+        return host.clear()
     }
 
     override fun submit() {
-        throw UnsupportedOperationException()
+        return host.submit()
     }
 
     override fun getLocation(): Point {
-        throw UnsupportedOperationException()
+        return rectangle.point
     }
 
     override fun <X : Any> getScreenshotAs(target: OutputType<X>): X {
@@ -53,7 +54,7 @@ open class ChildRectangleWebElement(val host: WebElement, val rectangle: Rectang
     }
 
     override fun findElement(by: By): WebElement {
-        throw UnsupportedOperationException()
+        return by.findElement(this)
     }
 
     override fun click() {
@@ -61,43 +62,52 @@ open class ChildRectangleWebElement(val host: WebElement, val rectangle: Rectang
     }
 
     override fun getTagName(): String {
-        throw UnsupportedOperationException()
+        return host.tagName
     }
 
     override fun getSize(): Dimension {
-        throw UnsupportedOperationException()
+        return rectangle.dimension
     }
 
     override fun getText(): String {
-        throw UnsupportedOperationException()
+        return host.text // TODO: maybe text inside rectangle with ocr?
     }
 
     override fun isSelected(): Boolean {
-        throw UnsupportedOperationException()
+        return host.isSelected
     }
 
     override fun isEnabled(): Boolean {
-        throw UnsupportedOperationException()
+        return host.isEnabled
     }
 
     override fun sendKeys(vararg keysToSend: CharSequence) {
-        throw UnsupportedOperationException()
+        return host.sendKeys(*keysToSend)
     }
 
     override fun getAttribute(name: String): String {
-        throw UnsupportedOperationException()
+        return host.getAttribute(name)
     }
 
     override fun getRect(): Rectangle {
-        throw UnsupportedOperationException()
+        return rectangle
     }
 
     override fun getCssValue(propertyName: String): String {
-        throw UnsupportedOperationException()
+        return host.getCssValue(propertyName)
     }
 
     override fun findElements(by: By): MutableList<WebElement> {
-        throw UnsupportedOperationException()
+        return by.findElements(this)
+//        when(by) {
+//            is ExtendedBy.ByPosition -> {}
+//            is ExtendedBy.ByChildRectangle -> {}
+//            is ExtendedBy.ByChildPercentRectangle -> {}
+//            is ExtendedBy.ByChildPoint -> {}
+//            is ExtendedBy.ByChildPercentPoint -> {}
+//            is ExtendedBy.ByResourceTemplate -> {}
+//
+//        }
     }
 
     override fun getWrappedDriver(): WebDriver {

@@ -1,15 +1,22 @@
 package com.xinaiz.wds.core.v2.core.bycontext
 
+import com.xinaiz.evilkotlin.errorhandling.tryOrDefault
 import com.xinaiz.evilkotlin.errorhandling.tryOrNull
+import com.xinaiz.wds.core.OCRMode
 import com.xinaiz.wds.core.element.ExtendedWebElement
+import com.xinaiz.wds.core.manager.ocr.PerformsOCR
 import com.xinaiz.wds.core.v2.core.wait.NoThrowSearchContextWait
 import com.xinaiz.wds.core.v2.core.wait.SearchContextConditions
 import com.xinaiz.wds.core.v2.core.wait.SearchContextWait
+import com.xinaiz.wds.core.v2.core.wait.resolveSearchContext
 import com.xinaiz.wds.util.extensions.extend
 import com.xinaiz.wds.util.extensions.extendAll
 import org.openqa.selenium.By
+import org.openqa.selenium.SearchContext
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
+import java.awt.image.BufferedImage
+import java.util.*
 
 open class ByContextV2 {
 
@@ -51,24 +58,28 @@ open class ByContextV2 {
         ByContextV2.SearchType.PARENT_ELEMENT -> searchParent as WebElement
     }
 
+    private fun getSearchType(): SearchType = searchType
+
     fun unwrap() = targetBy
 
     fun find(): ExtendedWebElement = getSearchContext().findElement(targetBy).extend()
     fun findOrNull(): ExtendedWebElement? = tryOrNull { tryOrNull { getSearchContext() }?.findElement(targetBy)?.extend() }
     fun findAll(): List<ExtendedWebElement> = getSearchContext().findElements(targetBy).extendAll()
 
+    fun isPresent(): Boolean = findOrNull() != null
+
     open fun wait(seconds: Long = 10, refreshMs: Long = 500) = WaitingThrowingByContextV2(searchDriver, searchParent, targetBy, seconds, refreshMs)
 
     fun click() = find().click()
+    fun clickIfPresent() = findOrNull()?.click()
     fun type(vararg keysToSend: CharSequence) = find().type(*keysToSend)
     val text get() = find().text
 }
 
-class CacheByContextV2(driver: WebDriver, parentElement: WebElement, by: By): ByContextV2(driver, parentElement, by) {
+class CacheByContextV2(driver: WebDriver, parentElement: WebElement, by: By) : ByContextV2(driver, parentElement, by) {
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Wait operations on cached screen don't make sense.")
-    override fun wait(seconds: Long, refreshMs: Long): WaitingThrowingByContextV2
-        = throw RuntimeException("Wait operations on cached screen don't make sense.")
+    override fun wait(seconds: Long, refreshMs: Long): WaitingThrowingByContextV2 = throw RuntimeException("Wait operations on cached screen don't make sense.")
 
 }
 
@@ -85,6 +96,11 @@ class WaitingThrowingByContextV2(private val driver: WebDriver, private val sear
     fun untilClickable() = wait.until(SearchContextConditions.elementToBeClickable(by))!!.extend()
     fun untilTextPresent(text: String) = wait.until(SearchContextConditions.textToBePresentInElementLocated(by, text))!!.extend()
     fun untilFrameAvailableAndSwithToIt() = wait.until(SearchContextConditions.frameToBeAvailableAndSwitchToIt(by))
+
+    fun untilElementScreenshot(predicate: (BufferedImage) -> Boolean) = wait.until { tryOrDefault({ predicate(resolveSearchContext(it).findElement(by).extend().getBufferedScreenshot()) }, false) }
+    fun untilOCRText(performsOCR: PerformsOCR, predicate: (String) -> Boolean, ocrMode: OCRMode, transform: ((BufferedImage) -> BufferedImage)?) = performsOCR.run { wait.until { predicate(resolveSearchContext(it).findElement(by).extend().doOCR(ocrMode, transform)) } }
+    fun untilBinaryOCRText(performsOCR: PerformsOCR, predicate: (String) -> Boolean, treshold: Int, ocrMode: OCRMode, transform: ((BufferedImage) -> BufferedImage)?) = performsOCR.run { wait.until { predicate(resolveSearchContext(it).findElement(by).extend().doBinaryOCR(treshold, ocrMode, transform)) } }
+
 
     fun find(): ExtendedWebElement = untilPresent()
 

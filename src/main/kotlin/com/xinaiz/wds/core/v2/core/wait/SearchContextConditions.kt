@@ -11,9 +11,6 @@ import java.util.regex.Pattern
  * Canned [SearchContextCondition]s which are generally useful within webdriver tests.
  */
 
-// Second argument can be WebDriver itself or parent element By locator
-typealias SearchInput = Pair<WebDriver, Any>
-
 object SearchContextConditions {
 
     private val log = Logger.getLogger(SearchContextConditions::class.java.name)
@@ -196,13 +193,6 @@ object SearchContextConditions {
         override fun toString(): String {
             return "condition to not be valid: $condition"
         }
-    }
-
-    private fun resolveSearchContext(input: SearchInput?) = when (input!!.second) {
-        is By -> input.first.findElement(input.second as By)
-        is WebDriver -> input.first
-        is WebElement -> input.second as WebElement
-        else -> impossible()
     }
 
     private fun findElement(by: By, input: SearchInput?): WebElement {

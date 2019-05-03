@@ -169,11 +169,11 @@ abstract class ExtendedBy<D: Any> : By() {
         override fun getData() = attr to value
 
         override fun findElements(context: SearchContext): List<WebElement> {
-            return context.findElements(By.xpath("//*[@$attr = '$value']"))
+            return context.findElements(By.xpath("//*[@$attr = \"$value\"]"))
         }
 
         override fun findElement(context: SearchContext): WebElement {
-            return context.findElement(By.xpath("//*[@$attr = '$value']"))
+            return context.findElement(By.xpath("//*[@$attr = \"$value\"]"))
         }
 
         override fun toString(): String {

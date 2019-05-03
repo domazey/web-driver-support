@@ -89,11 +89,6 @@ class ActionManager(private val driver: WebDriver): ManagesActions {
 
         val actions = mutableListOf<Pair<Any, Any>>()
 
-        override fun add(located: Searches.ByContext, action: Searches.ByContext.()->Unit): ManagesActions.ActionChain {
-            actions.add(located to action)
-            return this
-        }
-
         override fun add(located: By, action: WebElement.()->Unit): ManagesActions.ActionChain {
             actions.add(located to action)
             return this
@@ -119,7 +114,6 @@ class ActionManager(private val driver: WebDriver): ManagesActions {
                     is WebElement -> second.cast<WebElement.()->Unit>().invoke(first)
                     is ExtendedWebElement -> second.cast<ExtendedWebElement.()->Unit>().invoke(first)
                     is By -> second.cast<WebElement.()->Unit>().invoke(driver.findElement(first))
-                    is Searches.ByContext -> second.cast<Searches.ByContext.()->Unit>().invoke(first)
                 }
             }
         }

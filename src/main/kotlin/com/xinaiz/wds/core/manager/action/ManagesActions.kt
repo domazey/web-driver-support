@@ -74,7 +74,6 @@ interface ManagesActions {
     fun actionChain(): ActionChain
 
     interface ActionChain {
-        fun add(located: Searches.ByContext, action: Searches.ByContext.()->Unit): ActionChain
         fun add(located: By, action: WebElement.()->Unit): ActionChain
         fun add(located: WebElement, action: WebElement.()->Unit): ActionChain
         fun add(located: ExtendedWebElement, action: ExtendedWebElement.()->Unit): ActionChain

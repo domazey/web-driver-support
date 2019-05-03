@@ -17,3 +17,6 @@ fun ByContextV2.textWhenVisible(timeoutSeconds: Long = 10, refreshMs: Long = 500
 
 fun ByContextV2.textWhenClickable(timeoutSeconds: Long = 10, refreshMs: Long = 500)
     = wait(timeoutSeconds, refreshMs).untilClickable().text
+
+fun ByContextV2.clickWhenPresentOrNull(timeoutSeconds: Long = 10, refreshMs: Long = 500)
+    = wait(timeoutSeconds, refreshMs).orNull().untilPresent()?.click()

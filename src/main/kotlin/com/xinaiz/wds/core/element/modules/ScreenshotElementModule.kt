@@ -1,6 +1,5 @@
 package com.xinaiz.wds.core.element.modules
 
-import com.xinaiz.wds.elements.proxy.CachedScreenExtendedWebElement
 import com.xinaiz.wds.elements.proxy.ScreenCache
 import java.awt.image.BufferedImage
 interface ScreenshotElementModule : ElementModule {
@@ -14,7 +13,5 @@ interface ScreenshotElementModule : ElementModule {
 
     fun makeDefaultScreenshot()
 
-    fun cacheScreen(): CachedScreenExtendedWebElement
-
-    fun cacheScreenV2(): ScreenCache
+    fun cacheScreen(): ScreenCache
 }

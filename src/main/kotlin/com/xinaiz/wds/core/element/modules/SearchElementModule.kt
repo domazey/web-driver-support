@@ -13,9 +13,9 @@ interface SearchElementModule: ElementModule {
 
     fun findParasitic(by: ExtendedBy.ByChildRectangle): WebElement
 
-    fun find(byContext: Searches.ByContext): ExtendedWebElement
-    fun findOrNull(byContext: Searches.ByContext): ExtendedWebElement?
-    fun findAll(byContext: Searches.ByContext): List<ExtendedWebElement>
+//    fun find(byContext: Searches.ByContext): ExtendedWebElement
+//    fun findOrNull(byContext: Searches.ByContext): ExtendedWebElement?
+//    fun findAll(byContext: Searches.ByContext): List<ExtendedWebElement>
 
     fun find(byContext: ByContextV2): ExtendedWebElement
     fun findOrNull(byContext: ByContextV2): ExtendedWebElement?
