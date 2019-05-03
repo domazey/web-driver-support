@@ -50,9 +50,9 @@ class ExampleScenario(driver: WebDriver) : ExtendedWebDriver(driver) {
 ## Child Search ##
 | Old syntax | New syntax |
 | --- | --- |
-| `webElement.findElement(By.xxx("abc"))` | `webElement.find("abc".xxx)`|
-| `webElement.findElements(By.xxx("abc"))` | `webElement.findAll("abc".xxx)`|
-| `try { webElement.findElement(By.xxx("abc")) } catch(ex: Throwable) { null }` | `webElement.findOrNull("abc".xxx)`|
+| `parentElement.findElement(By.xxx("abc"))` | `parentElement.find("abc".xxx)` or `"abc".xxx.find(parentElement)`|
+| `parentElement.findElements(By.xxx("abc"))` | `parentElement.findAll("abc".xxx)` or `"abc".xxx.findAll(parentElement)`|
+| `try { parentElement.findElement(By.xxx("abc")) } catch(ex: Throwable) { null }` | `webElement.findOrNull("abc".xxx)` or `"abc".xxx.findOrNull(parentElement)`|
 ## Driver Methods ##
 All `WebDriver` methods are available via `this` context. In addition, many nested method have been flattened for simplier access. For example: 
 
@@ -69,12 +69,23 @@ All `WebDriver` methods are available via `this` context. In addition, many nest
 
 *TODO: document remaining WebElement JavaScript utility functions*
 ## Waiting ##
+Note: New wait methods throw just like original `WebDriverWait` does during timeout. To avoid that, it's required to use `.orNull()` syntax. When timeout occurres, instead of exception, `null` will be returned as waiting result.
+
 | Old syntax | New syntax |
 | --- | --- |
 | `WebDriverWait(webDriver, 10).until(ExpectedConditions.presenceOfElementLocated(By.xxx("abc")))` | `"abc".xxx.waitUntilPresent(10)`|
-| `try { WebDriverWait(webDriver, 10).until(ExpectedConditions.presenceOfElementLocated(By.xxx("abc"))) } catch(ex: Throwable) { } ` | `"abc".xxx.waitUntilPresentOrNull()`|
+| `try { WebDriverWait(webDriver, 10).until(ExpectedConditions.presenceOfElementLocated(By.xxx("abc"))) } catch(ex: Throwable) { } ` | `"abc".xxx.wait().orNull().untilPresent()`|
 
-# Template matching support:
+# Common tips
+There are many utility functions that simplify common expressions. Of course complex syntaxes are still available. For example:
+
+| Full expression | Shorter expression |
+| --- | --- |
+| `"avatar".id.findOrNull() != null` | `"avatar".id.isPresent()`|
+| `"button".id.wait(15).untilClickable().click()"` | `"button".id.clickWhenClickable(15)`|
+| `"button".id.wait(15).orNull().untilClickable()?.click()"` | `"button".id.clickWhenClickableOrNull(15)`|
+
+# Template matching support
 
 If you have `canvas` element on your page with inner controls, you can't normally click specific control, because they are not present in the DOM. This example shows how this library handles it:
 
