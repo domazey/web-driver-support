@@ -108,6 +108,7 @@ Then, you can find that element just like that:
 val guyFaces = "/images/guy_face.png".template(canvas).findAll()
 ```
 Now you are left with 2 elements:
+
 ![screenshot 3](https://i.imgur.com/Dm5wY3B.png)
 
 At this point you can click them, or search deeper!
