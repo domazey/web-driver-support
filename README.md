@@ -219,7 +219,7 @@ OCR is not perfect, and might mistake some characters - for example `8` and `B`.
 
 | Name | Description | Allowed characters |
 | --- | --- | --- |
-| `OCRMode.TEXT` | All asci characters | All asci characters |
+| `OCRMode.TEXT` | All asci characters | All ascii characters |
 | `OCRMode.DIGITS` | All digits | `0123456789` |
 | `OCRMode.CUSTOM` | Custom range | For example `OCRMode.CUSTOM("abcde12345")` |
 
@@ -227,3 +227,25 @@ It can be used as follows:
 ```
 "image".id.find().doOCR(ocrMode = OCRMode.DIGITS)
 ```
+
+## New search methods ##
+Other than template matching, there are other new search methods. All of them are defined in `ExtendedBy` class, which extends Selenium's `By` class (seriously):
+
+| Search method | Description | Example |
+| --- | --- | --- |
+| `ExtendedBy.classNameList(String)` | Classic `WebDriver` doesn't allow searching by multiple class names | `ExtendedBy.classNameList("unicode audiolink")` |
+| `ExtendedBy.attribute(String, String)` | Search by attribute and it's value | `ExtendedBy.attribute("value", "quit")` |
+| `ExtendedBy.template(...)` | Search by image from resources (string path), or by existing `BufferedImage`| `ExtendedBy.template(Example::class.java, "/images/face.png")` |
+| `ExtendedBy.value(String)` | Search by value of attribute `value` | `ExtendedBy.value("quit")` |
+| `ExtendedBy.position(Point)` | Returns element found by position from top left corner (using javascript) | `ExtendedBy.position(Point(100, 200))`|
+
+Other than that, there are also methods that return proxy elements which are not actually real `WebElement`'s, but are useful in composition with Template Matching, OCR, and position related code:
+
+| Search method | Description | Example |
+| --- | --- | --- |
+| `ExtendedBy.rectangle(Rectangle)` | Returns element that is proxy of real WebElement, but is bounded by rectangle inside it. It's very useful when performing Template Matching / OCR is specific area of parent element | `ExtendedBy.rectangle(Rectangle(20, 50, 100, 200))`|
+| `ExtendedBy.point(Point) ` | Similar to `ExtendedBy.rectangle`, but is defined only by a `Point`. Not suitable for Template Matching / OCR, but suitable for clicking at specific location inside other `WebElement` | `ExtendedBy.point(Point(200, 300))`|
+| `ExtendedBy.percentRectangle(RectangleF)` | Similar to `ExtendedBy.rectangle`, but is relation to the parent element in a percentage way (all parameters - `x`, `y`, `width` and `height` | `ExtendedBy.percentRectangle(RectangleF(0.1f, 0.2f, 0.5f, 0.3f))` |
+| `ExtendedBy.percentPoint(PointF)` | Similar to `ExtendedBy.percentRectangle`, but is defined only by a point. `Point(0.5f, 0.5f)` is center of parent element | `ExtendedBy.percentPoint(PointF(0.3f, 0.4f))` |
+| `ExtendedBy.twoPointRectangle(TwoPointRectangle)` | Results exactly the same as `ExtendedBy.rectangle`, but is defined by two points - top left and bottom right | `ExtendedBy.twoPointRectangle(TwoPointRectangle(Point(100, 200), Point(200, 400)))` |
+| `ExtendedBy.twoPointPercentRectangle(TwoPointRectangleF)` | Results exactly the same as `ExtendedBy.percentRectangle`, but is defined by two percentage points - top left and bottom right | `ExtendedBy.twoPointRectangle(TwoPointRectangleF(PointF(0.1f, 0.2f), PointF(0.4f, 0.3f)))` |
