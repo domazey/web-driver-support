@@ -41,6 +41,7 @@ class ExampleScenario(driver: WebDriver) : ExtendedWebDriver(driver) {
 
 ```
 
+
 # Migration guide:
 ## Search ##
 | Old syntax | New syntax |
@@ -77,7 +78,7 @@ Note: New wait methods throw just like original `WebDriverWait` does during time
 | `WebDriverWait(webDriver, 10).until(ExpectedConditions.presenceOfElementLocated(By.xxx("abc")))` | `"abc".xxx.waitUntilPresent(10)`|
 | `try { WebDriverWait(webDriver, 10).until(ExpectedConditions.presenceOfElementLocated(By.xxx("abc"))) } catch(ex: Throwable) { } ` | `"abc".xxx.wait().orNull().untilPresent()`|
 
-# Common tips
+## Common tips ##
 There are many utility functions that simplify common expressions. Of course complex syntaxes are still available. For example:
 
 | Full expression | Shorter expression |
@@ -86,9 +87,17 @@ There are many utility functions that simplify common expressions. Of course com
 | `"button".id.wait(15).untilClickable().click()"` | `"button".id.clickWhenClickable(15)`|
 | `"button".id.wait(15).orNull().untilClickable()?.click()"` | `"button".id.clickWhenClickableOrNull(15)`|
 
+
 # Template matching support
 
-If you have `canvas` element on your page with inner controls, you can't normally click specific control, because they are not present in the DOM. This example shows how this library handles it:
+If you have `canvas` element on your page with inner controls, you can't normally click specific control, because they are not present in the DOM. This library has some support for that case.
+
+### Setup ###
+
+To use this functionality, OpenCV library must be present. You can add it yourself to the project, or use dependency that handles that for you. For example https://github.com/openpnp/opencv.
+
+### How to use ###
+Example below shows how to use this functionality:
 
 Let's assume that `canvas` element has id `frame`. To find it, you would write:
 ```kotlin
@@ -139,8 +148,33 @@ var screenCache = canvas.cacheScreen() // screenshot taken
 
 screenCache = canvas.cacheScreen() // create new cache
 if(!"images/statistics_title.png".template(screenCache).isPresent()) {
-    "/images/statistic_button.png".template(screenCache).click()
+    "/images/statistics_button.png".template(screenCache).click()
 }
 
 // etc
 ```
+
+## Handling blurry / distorted content ##
+There are many cases that canvas content is not static - animation, overlay effects, lighting changes. In that case pixel-perfect template matching will fail miserably. To overcome this, image similarity can be specified. There are currently 5 predefined thresholds:
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `Similarity.EXACT` | 1.0 | Pixel-perfect match |
+| `Similarity.PRECISE` | 0.9 | A bit distored image, small overlay effects |
+| `Similarity.DEFAULT` | 0.8 | Default similarity, handles common overlay effects |
+| `Similarity.DISTORTED` | 0.7 | Highly distored image, but still recognizable |
+| `Similarity.LOW` | 0.5 | **Danger zone** - might find something else |
+
+Custom similarity can be also specified:
+```kotlin
+"/button.png".template(canvas, similarity = Constants.Similarity.EXACT.value).find()
+"/button.png".template(canvas, similarity = Constants.Similarity.PRECISE.value).find()
+"/button.png".template(canvas).find()
+"/button.png".template(canvas, similarity = Constants.Similarity.DISTORTED.value).find()
+"/button.png".template(canvas, similarity = Constants.Similarity.LOW.value).find()
+"/button.png".template(canvas, similarity = 0.95).find()
+"/button.png".template(canvas, similarity = 0.40).find()
+```
+**Important** If you use similarity lower than `Similarity.LOW`, you might find fish instead of elephant.
+
+
