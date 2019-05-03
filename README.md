@@ -177,4 +177,42 @@ Custom similarity can be also specified:
 ```
 **Important** If you use similarity lower than `Similarity.LOW`, you might find fish instead of elephant.
 
+# Optical Character Recognition (OCR) support
 
+There are multiple occastions when text cannot be accessed, because it's rendered inside `canvas` or is part of an image. Because of that, this library also supports recognizing text from images. Currently `Tesseract` API is used by default, but there is also generic support for any API that converts `BufferedImage` to `String`. 
+
+### Setup ###
+As mentioned above, we use `Tesseract` Api as default OCR engine. Installation instructions can be found on Tesseract github page - https://github.com/tesseract-ocr/tesseract. To use it with Web Driver Support, initialization is required:
+```kotlin
+init {
+    ocr.setDatapath("D:\\<tesseract-installation-folder>\\Tesseract-OCR\\tessdata")
+    ocr.setConfigs(listOf("quiet")) // disable logs
+}
+```
+Property `ocr` is defined in `ExtendedWebDriver`, and it can be initalized in `init` block of class that extends it.
+### How to use ###
+OCR functionality is exposed by both `ExtendedWebDriver` and `ExtendedWebElement` classes, but latter is preferred. OCR is performed in bounds of target element:
+
+Default OCR, no additional image processing is performed:
+```kotlin
+"body".tag.find().doOCR() // perform OCR on whole visible page
+```
+Treshold OCR. Convert image to binary (black and white). All pixels below lightness treshold 180 (scale 0-255) will be black, all above will be white.
+```kotlin
+"canvas".id.find().doBinaryOCR(treshold = 180) 
+```
+Use case:
+
+![upperbound treshold](https://i.imgur.com/goPZUth.gif)
+
+For very indistinguishable text (bledning with background) or if parts of background are both brighter and darker than text, both lower and upper lightness bounds can be specified. Pixels between bounds will become white, and other will become black.
+```kotlin
+"canvas".id.find().doBinaryOCR(tresholdMin = 150, tresholdMax = 160) 
+```
+Use case:
+
+![lower and upper bound threshold](https://i.imgur.com/4MiOlxv.gif)
+
+
+
+ 
