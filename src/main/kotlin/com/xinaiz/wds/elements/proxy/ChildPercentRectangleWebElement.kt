@@ -8,10 +8,6 @@ import org.openqa.selenium.interactions.Actions
 import javax.imageio.ImageIO
 
 
-/**
-
- */
-
 open class ChildPercentRectangleWebElement(val host: WebElement, val rectangle: RectangleF) : WebElement, WrapsDriver {
 
     private var hostType = HostType.NAVITE

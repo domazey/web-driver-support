@@ -1,9 +1,13 @@
 package com.xinaiz.wds.core
 
+import com.xinaiz.evilkotlin.cast.cast
+import com.xinaiz.wds.core.element.ExtendedWebElement
+import org.openqa.selenium.JavascriptExecutor
+import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
 
 class ElementBuilder<T : ExtendedWebElement>(
-    private val extendedWebDriver: ExtendedWebDriver,
+    private val extendedWebDriver: WebDriver,
     private val tag: String,
     private val type: String?,
     private val proxyFactory: (WebElement) -> T) {
@@ -23,7 +27,7 @@ class ElementBuilder<T : ExtendedWebElement>(
     }
 
     fun inParent(parent: WebElement): T {
-        val webElement = extendedWebDriver.executeScript("""
+        val webElement = extendedWebDriver.cast<JavascriptExecutor>().executeScript("""
                     var element = document.createElement("$tag");
                     arguments[0].appendChild(element);
                     ${addTypeScript()}
@@ -31,6 +35,8 @@ class ElementBuilder<T : ExtendedWebElement>(
                 """, parent) as WebElement
         return proxyFactory(webElement)
     }
+
+    fun inParent(parent: ExtendedWebElement): T = inParent(parent.original)
 
 
 }

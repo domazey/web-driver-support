@@ -1,6 +1,6 @@
 package com.xinaiz.wds.elements.tagged
 
-import com.xinaiz.wds.core.ExtendedWebElement
+import com.xinaiz.wds.core.element.ExtendedWebElement
 import org.openqa.selenium.WebElement
 
 class HeadExtendedWebElement(original: WebElement) : ExtendedWebElement(original) {

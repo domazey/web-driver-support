@@ -1,9 +1,5 @@
 package com.xinaiz.wds.js.scripts
 
-/**
-
- */
-
 val Scripts.CHANGE_TAG_NAME
     get() =
         """var original    = arguments[0];

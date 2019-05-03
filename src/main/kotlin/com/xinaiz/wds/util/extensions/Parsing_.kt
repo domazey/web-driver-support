@@ -1,9 +1,5 @@
 package com.xinaiz.wds.util.extensions
 
-/**
-
- */
-
 inline fun <reified T> String.extractAll(regex: Regex, crossinline converter: (String) -> T): List<T> {
     return regex.findAll(this).map { converter(it.value) }.toList()
 }

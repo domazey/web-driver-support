@@ -9,10 +9,6 @@ import java.awt.Graphics2D
 
 
 
-/**
-
- */
-
 fun BufferedImage.getSubimage(rectangle: Rectangle): BufferedImage {
     return this.getSubimage(
         rectangle.x,
@@ -50,4 +46,17 @@ fun BufferedImage.removeAlpha() : BufferedImage {
     g2d.drawImage(this, 0, 0, null)
     g2d.dispose()
     return newImage
+}
+
+fun BufferedImage.pixelCount(color: Color): Int {
+    var count = 0
+    for(i in 0 until width) {
+        for(j in 0 until height) {
+            val pixel = getRGB(i, j)
+            if(Color(pixel) == color) {
+                count++
+            }
+        }
+    }
+    return count
 }

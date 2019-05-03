@@ -3,10 +3,6 @@ package com.xinaiz.wds.js
 import org.openqa.selenium.JavascriptExecutor
 import org.openqa.selenium.WebElement
 
-/**
-
- */
-
 fun JavascriptExecutor.setProperty(element: WebElement, propertyPath: String, newValue: Any) {
     executeScript("""arguments[0].$propertyPath = arguments[1];""", element, newValue)
 }
