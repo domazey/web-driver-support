@@ -213,6 +213,17 @@ Use case:
 
 ![lower and upper bound threshold](https://i.imgur.com/4MiOlxv.gif)
 
-
-
+### Using OCRMode ###
  
+OCR is not perfect, and might mistake some characters - for example `8` and `B`. For that, `OCRMode` can be specified. It defines which characters are allowed. Currently there are 3 modes:
+
+| Name | Description | Allowed characters |
+| --- | --- | --- |
+| `OCRMode.TEXT` | All asci characters | All asci characters |
+| `OCRMode.DIGITS` | All digits | `0123456789` |
+| `OCRMode.CUSTOM` | Custom range | For example `OCRMode.CUSTOM("abcde12345")` |
+
+It can be used as follows:
+```
+"image".id.find().doOCR(ocrMode = OCRMode.DIGITS)
+```
