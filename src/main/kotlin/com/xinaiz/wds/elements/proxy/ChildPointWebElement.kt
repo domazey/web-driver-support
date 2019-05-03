@@ -5,10 +5,6 @@ import org.openqa.selenium.*
 import org.openqa.selenium.interactions.Actions
 
 
-/**
-
- */
-
 class ChildPointWebElement(val host: WebElement, val point: Point) : WebElement, WrapsDriver {
 
     override fun isDisplayed(): Boolean {

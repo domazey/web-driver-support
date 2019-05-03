@@ -3,10 +3,6 @@ package com.xinaiz.wds.decorators
 import com.xinaiz.wds.util.reflect.getMethodName
 import kotlin.properties.Delegates
 
-/**
-
- */
-
 class MeasureTime(private val timeProviderMs: () -> Long = System::currentTimeMillis,
                   private val formatterMs: (Long) -> String = { "$it ms" },
                   private val output: (String) -> Unit = ::println) : Decorator {

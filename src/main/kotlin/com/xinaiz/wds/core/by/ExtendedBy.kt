@@ -16,10 +16,6 @@ import org.openqa.selenium.*
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
-/**
-
- */
-
 abstract class ExtendedBy<D: Any> : By() {
 
     abstract fun getData(): D

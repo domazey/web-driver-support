@@ -37,10 +37,6 @@ import java.awt.image.DataBufferByte
 import org.opencv.core.Scalar
 import com.xinaiz.wds.elements.tagged.*
 
-/**
-
- */
-
 open class ExtendedWebElement private constructor(
     val original: WebElement,
     private val wrappingElementModule: WrappingElementModuleImpl,

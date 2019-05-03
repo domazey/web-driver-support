@@ -9,10 +9,6 @@ import org.openqa.selenium.interactions.Actions
 import javax.imageio.ImageIO
 
 
-/**
-
- */
-
 open class ChildRectangleWebElement(val host: WebElement, val rectangle: Rectangle) : WebElement, WrapsDriver {
 
     private var hostType = HostType.NAVITE

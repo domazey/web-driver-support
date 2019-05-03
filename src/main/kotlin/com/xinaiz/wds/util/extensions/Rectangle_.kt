@@ -9,10 +9,6 @@ import org.openqa.selenium.Point
 import org.openqa.selenium.Rectangle
 import org.openqa.selenium.WebElement
 
-/**
-
- */
-
 val Rectangle.center: Point
     get() = Point(x + width / 2, y + height / 2)
 

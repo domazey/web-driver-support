@@ -5,10 +5,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.properties.Delegates
 
-/**
-
- */
-
 
 
 class NotifyCallsAndReturns(private val detailsProvider: () -> String = { SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(Date()) },

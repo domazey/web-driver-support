@@ -8,10 +8,6 @@ import com.xinaiz.wds.elements.proxy.ScreenCache
 import com.xinaiz.wds.util.support.RectangleF
 import org.openqa.selenium.WebElement
 
-/**
-
- */
-
 fun RectangleF.findIn(element: WebElement) : WebElement {
     return element.findElement(ExtendedBy.percentRectangle(this))
 }

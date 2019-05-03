@@ -9,10 +9,6 @@ import java.awt.Graphics2D
 
 
 
-/**
-
- */
-
 fun BufferedImage.getSubimage(rectangle: Rectangle): BufferedImage {
     return this.getSubimage(
         rectangle.x,
