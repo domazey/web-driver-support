@@ -29,7 +29,7 @@ class SearchContextProvider {
         get() = resolveSearchContext()
 
     val webDriver: WebDriver
-        get() = webDriver
+        get() = _webDriver
 
     private fun resolveSearchContext() = when (_searchContextSource) {
         is By -> _webDriver.findElement(_searchContextSource)
