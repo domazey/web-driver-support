@@ -205,7 +205,7 @@ Use case:
 
 ![upperbound treshold](https://i.imgur.com/goPZUth.gif)
 
-For very indistinguishable text (bledning with background) or if parts of background are both brighter and darker than text, both lower and upper lightness bounds can be specified. Pixels between bounds will become white, and other will become black.
+For very indistinguishable text (blending with background) or if parts of background are both brighter and darker than text, both lower and upper lightness bounds can be specified. Pixels between bounds will become white, and other will become black.
 ```kotlin
 "canvas".id.find().doBinaryOCR(tresholdMin = 150, tresholdMax = 160) 
 ```
