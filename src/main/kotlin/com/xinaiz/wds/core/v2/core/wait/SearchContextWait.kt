@@ -1,28 +1,18 @@
 package com.xinaiz.wds.core.v2.core.wait
 
+import com.xinaiz.wds.core.v2.core.bycontext.SearchContextProvider
 import com.xinaiz.wds.core.v2.core.util.impossible
 import org.openqa.selenium.*
 import org.openqa.selenium.support.ui.FluentWait
 import org.openqa.selenium.support.ui.Sleeper
 import java.time.Duration
 
-// Second argument can be WebDriver itself or parent element By locator
-typealias SearchInput = Pair<WebDriver, Any>
-
-fun resolveSearchContext(input: SearchInput?) = when (input!!.second) {
-    is By -> input.first.findElement(input.second as By)
-    is WebDriver -> input.first
-    is WebElement -> input.second as WebElement
-    else -> impossible()
-}
-
 open class SearchContextWait(
-    driver: WebDriver,
-    searchParent: Any,
+    searchContextProvider: SearchContextProvider,
     clock: java.time.Clock,
     sleeper: Sleeper,
     timeOutInSeconds: Long,
-    sleepTimeOut: Long) : FluentWait<SearchInput>(driver to searchParent, clock, sleeper) {
+    sleepTimeOut: Long) : FluentWait<SearchContextProvider>(searchContextProvider, clock, sleeper) {
 
     /**
      * Wait will ignore instances of NotFoundException that are encountered (thrown) by default in
@@ -33,9 +23,8 @@ open class SearchContextWait(
      * @param timeOutInSeconds The timeout in seconds when an expectation is called
      * @see WebDriverWait.ignoring
      */
-    constructor(driver: WebDriver, searchParent: Any, timeOutInSeconds: Long) : this(
-        driver,
-        searchParent,
+    constructor(searchContextProvider: SearchContextProvider, timeOutInSeconds: Long) : this(
+        searchContextProvider,
         java.time.Clock.systemDefaultZone(),
         Sleeper.SYSTEM_SLEEPER,
         timeOutInSeconds,
@@ -52,9 +41,8 @@ open class SearchContextWait(
      * @param sleepInMillis The duration in milliseconds to sleep between polls.
      * @see WebDriverWait.ignoring
      */
-    constructor(driver: WebDriver, searchParent: Any, timeOutInSeconds: Long, sleepInMillis: Long) : this(
-        driver,
-        searchParent,
+    constructor(searchContextProvider: SearchContextProvider, timeOutInSeconds: Long, sleepInMillis: Long) : this(
+        searchContextProvider,
         java.time.Clock.systemDefaultZone(),
         Sleeper.SYSTEM_SLEEPER,
         timeOutInSeconds,
