@@ -1,7 +1,6 @@
 package com.xinaiz.wds.core.manager.javascript
 
 import com.xinaiz.evilkotlin.cast.cast
-import com.xinaiz.wds.bots.dh.logBlue
 import com.xinaiz.wds.js.runFunction
 import org.openqa.selenium.JavascriptExecutor
 import org.openqa.selenium.TimeoutException
@@ -29,7 +28,6 @@ class JavascriptManager(private val driver: WebDriver) : ExecutesJavascript {
         val resultVariable = "$RESULT_VARIABLE_NAME$resultVariableIndex"
         val resultError = "$RESULT_ERROR_NAME$resultVariableIndex"
         val modifiedScript = "$resultVariable = undefined;\n$resultError = undefined;\n${scriptBuilder(resultVariable, resultError)}"
-        logBlue(modifiedScript)
         executeScript(modifiedScript)
         return awaitForResult(timeoutMs, resultVariable, resultError)
     }
@@ -41,7 +39,6 @@ class JavascriptManager(private val driver: WebDriver) : ExecutesJavascript {
         val resultError = "$RESULT_ERROR_NAME$resultVariableIndex"
         val escapedScript = escapePlaceholdersInScript(placeholderScript, resultVariable, resultError)
         val modifiedScript = "$resultVariable = undefined;\n$resultError = undefined;\n$escapedScript"
-        logBlue(modifiedScript)
         executeScript(modifiedScript)
         return awaitForResult(timeoutMs, resultVariable, resultError)
     }
