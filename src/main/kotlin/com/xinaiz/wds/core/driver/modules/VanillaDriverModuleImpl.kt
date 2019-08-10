@@ -2,11 +2,16 @@ package com.xinaiz.wds.core.driver.modules
 
 import com.xinaiz.evilkotlin.cast.cast
 import com.xinaiz.evilkotlin.errorhandling.tryOrNull
+import com.xinaiz.wds.core.v2.core.util.splitQuery
+import org.apache.http.client.utils.URLEncodedUtils
 import org.jsoup.Jsoup
 import org.openqa.selenium.*
 import org.openqa.selenium.interactions.HasInputDevices
 import org.openqa.selenium.interactions.Interactive
 import org.openqa.selenium.interactions.Sequence
+import java.net.URI
+import java.net.URL
+import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
 
 class VanillaDriverModuleImpl(private val driver: WebDriver)
@@ -158,4 +163,6 @@ class VanillaDriverModuleImpl(private val driver: WebDriver)
     override fun switchToDefaultContent() = switchTo.defaultContent()
     override fun switchToAlert() = switchTo.alert()
 
+    override val queryParams: Map<String, List<String>?>
+        get() = splitQuery(currentUrl)
 }

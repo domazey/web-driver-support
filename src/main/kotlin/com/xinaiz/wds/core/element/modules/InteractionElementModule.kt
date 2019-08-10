@@ -12,4 +12,6 @@ interface InteractionElementModule: ElementModule {
 
     fun clickAtRandomPosition()
 
+    fun moveToAndClick(): Unit
+
 }

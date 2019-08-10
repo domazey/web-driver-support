@@ -59,6 +59,8 @@ open class ByContext {
 
     fun isPresent(): Boolean = findOrNull() != null
 
+    fun isDisplayed(): Boolean = findOrNull()?.isDisplayed ?: false
+
     open fun wait(seconds: Long = 10, refreshMs: Long = 500) = WaitingThrowingByContext(searchContextProvider, targetBy, seconds, refreshMs)
 
     fun click() = find().click()

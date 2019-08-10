@@ -1,10 +1,12 @@
 package com.xinaiz.wds.elements.proxy
 
+import com.xinaiz.wds.core.element.modules.BytesHelper
 import com.xinaiz.wds.util.extensions.extend
 import com.xinaiz.wds.util.extensions.getSubimageByPercent
 import com.xinaiz.wds.util.support.RectangleF
 import org.openqa.selenium.*
 import org.openqa.selenium.interactions.Actions
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException
 import javax.imageio.ImageIO
 
 
@@ -12,6 +14,7 @@ open class ChildPercentRectangleWebElement(val host: WebElement, val rectangle: 
 
     private var hostType = HostType.NAVITE
     private var cachedHost: CachedScreenExtendedWebElement? = null
+    private val actions by lazy { Actions(host.extend().driver) }
 
     constructor(cachedHost: CachedScreenExtendedWebElement, rectangle: RectangleF) : this(cachedHost.original, rectangle) {
         hostType = HostType.CACHED_SCREEN
@@ -35,17 +38,16 @@ open class ChildPercentRectangleWebElement(val host: WebElement, val rectangle: 
     }
 
     override fun <X : Any> getScreenshotAs(target: OutputType<X>): X {
-        if(target != OutputType.FILE) {
+        if(target != OutputType.BYTES) {
             throw UnsupportedOperationException()
         }
-        val file = when (hostType) {
-            HostType.NAVITE -> host.getScreenshotAs(OutputType.FILE)
-            HostType.CACHED_SCREEN -> cachedHost!!.getScreenshot(OutputType.FILE)
+        val bytes = when (hostType) {
+            HostType.NAVITE -> host.getScreenshotAs(OutputType.BYTES)
+            HostType.CACHED_SCREEN -> cachedHost!!.getScreenshot(OutputType.BYTES)
         }
-        val hostImage =  ImageIO.read(file)
+        val hostImage =  BytesHelper.toBufferedImage(bytes)
         val subImage = hostImage.getSubimageByPercent(rectangle)
-        ImageIO.write(subImage, "png", file)
-        return file as X
+        return BytesHelper.toBytes(subImage) as X
     }
 
     override fun findElement(by: By): WebElement {

@@ -15,4 +15,9 @@ interface OCRElementModule: ElementModule {
 
     fun doBinaryOCRWith(ocr: (BufferedImage) -> String, treshold: Int = 128, transform: ((BufferedImage) -> BufferedImage)? = null): String
 
+    fun doBinaryOCRWith(tesseract: Tesseract, tresholdMin: Int = 86, tresholdMax: Int = 170, ocrMode: OCRMode = OCRMode.TEXT, transform: ((BufferedImage) -> BufferedImage)? = null): String
+
+    fun doBinaryOCRWith(ocr: (BufferedImage) -> String, tresholdMin: Int = 86, tresholdMax: Int = 170, transform: ((BufferedImage) -> BufferedImage)? = null): String
+
+
 }

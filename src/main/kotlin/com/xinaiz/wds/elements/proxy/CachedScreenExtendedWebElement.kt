@@ -1,6 +1,7 @@
 package com.xinaiz.wds.elements.proxy
 
 import com.xinaiz.wds.core.element.ExtendedWebElement
+import com.xinaiz.wds.core.element.modules.BytesHelper
 import org.openqa.selenium.OutputType
 import org.openqa.selenium.WebElement
 import java.awt.image.BufferedImage
@@ -23,12 +24,9 @@ class CachedScreenExtendedWebElement(webElement: WebElement, screenshot: Buffere
     }
 
     override fun <X> getScreenshot(target: OutputType<X>): X {
-        if (target != OutputType.FILE) {
+        if (target != OutputType.BYTES) {
             throw UnsupportedOperationException()
         }
-        val file = File.createTempFile(SimpleDateFormat("yyyyMMddHHmmss").format(Date()), ".png")
-        ImageIO.write(cachedScreenshot, "png", file)
-        file.deleteOnExit()
-        return file as X
+        return BytesHelper.toBytes(cachedScreenshot) as X
     }
 }
