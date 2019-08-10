@@ -4,10 +4,12 @@ import com.xinaiz.wds.util.extensions.extend
 import com.xinaiz.wds.util.support.PointF
 import org.openqa.selenium.*
 import org.openqa.selenium.interactions.Actions
-
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException
 
 
 class ChildPercentPointWebElement(val host: WebElement, val point: PointF) : WebElement, WrapsDriver {
+
+    private val actions by lazy { Actions(host.extend().driver) }
 
     override fun isDisplayed(): Boolean {
         throw UnsupportedOperationException()

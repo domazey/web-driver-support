@@ -5,7 +5,10 @@ import com.xinaiz.wds.core.element.ExtendedWebElement
 import com.xinaiz.wds.core.v2.core.bycontext.ByContext
 import com.xinaiz.wds.core.v2.core.bycontext.CacheByContext
 import com.xinaiz.wds.core.v2.core.bycontext.WaitingThrowingByContext
+import com.xinaiz.wds.elements.cocos2d.Cocos2DElement
 import com.xinaiz.wds.elements.proxy.ScreenCache
+import io.reactivex.Single
+import io.reactivex.schedulers.Schedulers
 import org.openqa.selenium.By
 import org.openqa.selenium.WebElement
 import java.awt.image.BufferedImage
@@ -60,6 +63,10 @@ interface Searches {
     fun BufferedImage.template(parentByContext: ByContext, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): ByContext
         = template(parentByContext.unwrap(), similarity, cachedScreenshot, transform, fillColor, maxResults)
 
+    // Cocos2d locators
+    fun String.cocos2d(parentByContext: ByContext): ByContext
+
+
     fun String.id(parentElement: WebElement): ByContext
     fun String.className(parentElement: WebElement): ByContext
     fun String.css(parentElement: WebElement): ByContext
@@ -88,6 +95,9 @@ interface Searches {
     fun String.template(parentElement: ExtendedWebElement, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): ByContext
     fun BufferedImage.template(parentElement: ExtendedWebElement, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): ByContext
 
+    // Experimental: Async
+    fun String.templateAsync(parentByContext: ByContext, similarity: Double = Constants.Similarity.DEFAULT.value, cachedScreenshot: BufferedImage? = null, transform: ((BufferedImage) -> BufferedImage)? = null, fillColor: java.awt.Color = java.awt.Color.BLACK, maxResults: Int = 20): Single<ByContext>
+        = Single.fromCallable { template(parentByContext.unwrap(), similarity, cachedScreenshot, transform, fillColor, maxResults) }.subscribeOn(Schedulers.newThread())
 
     fun By.extend(): ByContext
     fun By.extend(parentLocator: By): ByContext

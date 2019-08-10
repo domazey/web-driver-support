@@ -1,18 +1,23 @@
 package com.xinaiz.wds.elements.proxy
 
 import com.xinaiz.wds.core.by.ExtendedBy
+import com.xinaiz.wds.core.element.modules.BytesHelper
 import com.xinaiz.wds.util.extensions.center
 import com.xinaiz.wds.util.extensions.extend
 import com.xinaiz.wds.util.extensions.getSubimage
 import org.openqa.selenium.*
 import org.openqa.selenium.interactions.Actions
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
 
-open class ChildRectangleWebElement(val host: WebElement, val rectangle: Rectangle) : WebElement, WrapsDriver {
+open class ChildRectangleWebElement(val host: WebElement, val rectangle: Rectangle) : WebElement, WrapsDriver, WrapsElement {
 
     private var hostType = HostType.NAVITE
     private var cachedHost: CachedScreenExtendedWebElement? = null
+    val actions by lazy { Actions(host.extend().driver) }
 
     constructor(cachedHost: CachedScreenExtendedWebElement, rectangle: Rectangle) : this(cachedHost.original, rectangle) {
         hostType = HostType.CACHED_SCREEN
@@ -36,17 +41,16 @@ open class ChildRectangleWebElement(val host: WebElement, val rectangle: Rectang
     }
 
     override fun <X : Any> getScreenshotAs(target: OutputType<X>): X {
-        if (target != OutputType.FILE) {
+        if (target != OutputType.BYTES) {
             throw UnsupportedOperationException()
         }
-        val file = when (hostType) {
-            HostType.NAVITE -> host.getScreenshotAs(OutputType.FILE)
-            HostType.CACHED_SCREEN -> cachedHost!!.getScreenshot(OutputType.FILE)
+        val bytes = when (hostType) {
+            HostType.NAVITE -> host.getScreenshotAs(OutputType.BYTES)
+            HostType.CACHED_SCREEN -> cachedHost!!.getScreenshot(OutputType.BYTES)
         }
-        val hostImage = ImageIO.read(file)
+        val hostImage = BytesHelper.toBufferedImage(bytes)
         val subImage = hostImage.getSubimage(rectangle)
-        ImageIO.write(subImage, "png", file)
-        return file as X
+        return BytesHelper.toBytes(subImage) as X
     }
 
     override fun findElement(by: By): WebElement {
@@ -110,9 +114,21 @@ open class ChildRectangleWebElement(val host: WebElement, val rectangle: Rectang
         return (host as WrapsDriver).wrappedDriver
     }
 
+    override fun getWrappedElement(): WebElement {
+        return host
+    }
+
+
     fun clickWithOffset(offsetX: Int, offsetY: Int) {
-        val center = rectangle.center
-        Actions(host.extend().driver).moveToElement(host, center.x + offsetX, center.y + offsetY).click().perform()
+        val targetRectangle: Rectangle = rectangle
+        var element = host
+        while(element is ChildRectangleWebElement) {
+            targetRectangle.x += element.rectangle.x
+            targetRectangle.y += element.rectangle.y
+            element = element.host
+        }
+        val center = targetRectangle.center
+        Actions(host.extend().driver).moveToElement(element, center.x + offsetX, center.y + offsetY).click().perform()
 
     }
 

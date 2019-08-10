@@ -27,4 +27,7 @@ class InteractionElementModuleImpl(private val element: WebElement)
             .perform()
     }
 
+    override fun moveToAndClick() {
+        actions.moveToElement(element).click().perform()
+    }
 }

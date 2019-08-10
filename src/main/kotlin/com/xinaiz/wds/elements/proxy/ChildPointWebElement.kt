@@ -3,9 +3,12 @@ package com.xinaiz.wds.elements.proxy
 import com.xinaiz.wds.util.extensions.extend
 import org.openqa.selenium.*
 import org.openqa.selenium.interactions.Actions
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException
 
 
 class ChildPointWebElement(val host: WebElement, val point: Point) : WebElement, WrapsDriver {
+
+    private val actions by lazy { Actions(host.extend().driver) }
 
     override fun isDisplayed(): Boolean {
         throw UnsupportedOperationException()

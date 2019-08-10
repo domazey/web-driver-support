@@ -203,6 +203,9 @@ object SearchContextConditions {
         } catch (e: NoSuchElementException) {
             throw e
         } catch (e: WebDriverException) {
+            if(e.message?.contains("Cannot take screenshot with 0") == true) {
+                throw NoSuchElementException("Cannot locate an element using $by. (Cannot take screenshot with 0...)")
+            }
             log.log(Level.WARNING,
                 String.format("WebDriverException thrown by findElement(%s)", by), e)
             throw e
@@ -215,6 +218,9 @@ object SearchContextConditions {
             val searchContext = input!!.searchContext
             return searchContext.findElements(by)
         } catch (e: WebDriverException) {
+            if(e.message?.contains("Cannot take screenshot with 0") == true) {
+                throw NoSuchElementException("Cannot locate an element using $by. (Cannot take screenshot with 0...)")
+            }
             log.log(Level.WARNING,
                 String.format("WebDriverException thrown by findElements(%s)", by), e)
             throw e

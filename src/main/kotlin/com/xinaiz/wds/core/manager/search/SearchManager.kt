@@ -53,6 +53,8 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
     override fun String.template(screenCache: ScreenCache, similarity: Double, transform: ((BufferedImage) -> BufferedImage)?, fillColor: java.awt.Color, maxResults: Int) = ExtendedBy.template(resourceClass, this, similarity, screenCache.screen, transform, fillColor, maxResults).extendCached(screenCache.source)
     override fun BufferedImage.template(screenCache: ScreenCache, similarity: Double, transform: ((BufferedImage) -> BufferedImage)?, fillColor: java.awt.Color, maxResults: Int) = ExtendedBy.template(this, similarity, screenCache.screen, transform, fillColor, maxResults).extendCached(screenCache.source)
 
+    override fun String.cocos2d(parentByContext: ByContext) = ExtendedBy.cocos2dName(this, parentByContext).extend()
+
     override fun String.id(parentElement: WebElement) = By.id(this).extend(parentElement)
     override fun String.className(parentElement: WebElement) = By.className(this).extend(parentElement)
     override fun String.css(parentElement: WebElement) = By.cssSelector(this).extend(parentElement)
@@ -106,9 +108,9 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
         override val String.template get() = ExtendedBy.template(resourceClass, this, transform = null).extend(parentBy)
         override val BufferedImage.template get() = ExtendedBy.template(this, transform = null).extend(parentBy)
 
-        override fun searchById(body: Searches.DefaultSearchMethodAware.Id.()->Unit) = body(IdSearchMethodInParent(parentBy.extend()))
-        override fun searchByName(body: Searches.DefaultSearchMethodAware.Name.()->Unit) = body(NameSearchMethodInParent(parentBy.extend()))
-        override fun searchByTemplate(body: Searches.DefaultSearchMethodAware.Template.()->Unit) = body(TemplateSearchMethodInParent(parentBy.extend()))
+        override fun searchById(body: Searches.DefaultSearchMethodAware.Id.() -> Unit) = body(IdSearchMethodInParent(parentBy.extend()))
+        override fun searchByName(body: Searches.DefaultSearchMethodAware.Name.() -> Unit) = body(NameSearchMethodInParent(parentBy.extend()))
+        override fun searchByTemplate(body: Searches.DefaultSearchMethodAware.Template.() -> Unit) = body(TemplateSearchMethodInParent(parentBy.extend()))
 
         // TODO: remaining search types
     }
@@ -180,8 +182,8 @@ class SearchManager(private val webDriver: WebDriver) : Searches {
     }
 
     override fun withParentContext(screenCache: ScreenCache, body: Searches.ScreenCacheSearchContextAware.() -> Unit) = ScreenCacheSearchContext(screenCache).run(body)
-    override fun withParentContext(parentBy: By, body: SearchManager.ParentLocatorByContext.()->Unit) = ParentLocatorByContext(parentBy).run(body)
-    override fun withParentContext(parentBy: ByContext, body: SearchManager.ParentLocatorByContext.()->Unit) = withParentContext(parentBy.unwrap(), body)
+    override fun withParentContext(parentBy: By, body: SearchManager.ParentLocatorByContext.() -> Unit) = ParentLocatorByContext(parentBy).run(body)
+    override fun withParentContext(parentBy: ByContext, body: SearchManager.ParentLocatorByContext.() -> Unit) = withParentContext(parentBy.unwrap(), body)
 
     override fun searchById(body: Searches.DefaultSearchMethodAware.Id.() -> Unit) = body(IdSearchMethod())
     override fun searchByName(body: Searches.DefaultSearchMethodAware.Name.() -> Unit) = body(NameSearchMethod())

@@ -14,4 +14,9 @@ interface ExecutesJavascript {
 
     fun <R> runFunction(name: String, vararg args: Any): R
 
+    fun executeAsyncScriptWithResult(timeoutMs: Long, scriptBuilder: (String, String)->String, vararg args: Any): Any?
+
+    fun executeAsyncScriptWithResult(timeoutMs: Long, placeholderScript: String, vararg args: Any): Any?
+
+    val String.script: WebDriverScript
 }

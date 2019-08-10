@@ -12,4 +12,5 @@ interface OCRDriverModulefsdfsdf: DriverModule {
 
     fun ExtendedWebElement.doOCR(ocrMode: OCRMode = OCRMode.TEXT, transform: ((BufferedImage) -> BufferedImage)? = null): String
     fun ExtendedWebElement.doBinaryOCR(treshold: Int = 128, ocrMode: OCRMode = OCRMode.TEXT, transform: ((BufferedImage) -> BufferedImage)? = null): String
+    fun ExtendedWebElement.doBinaryOCR(tresholdMin: Int = 86, tresholdMax: Int = 170, ocrMode: OCRMode = OCRMode.TEXT, transform: ((BufferedImage) -> BufferedImage)? = null): String
 }

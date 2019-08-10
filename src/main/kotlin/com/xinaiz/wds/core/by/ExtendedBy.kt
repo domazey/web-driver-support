@@ -2,6 +2,9 @@ package com.xinaiz.wds.core.by
 
 import com.xinaiz.evilkotlin.cast.cast
 import com.xinaiz.wds.core.Constants
+import com.xinaiz.wds.core.driver.ExtendedWebDriver
+import com.xinaiz.wds.core.v2.core.bycontext.ByContext
+import com.xinaiz.wds.elements.cocos2d.Cocos2DElement
 import com.xinaiz.wds.elements.proxy.ChildPercentPointWebElement
 import com.xinaiz.wds.elements.proxy.ChildPercentRectangleWebElement
 import com.xinaiz.wds.elements.proxy.ChildPointWebElement
@@ -16,7 +19,7 @@ import org.openqa.selenium.*
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
-abstract class ExtendedBy<D: Any> : By() {
+abstract class ExtendedBy<D : Any> : By() {
 
     abstract fun getData(): D
 
@@ -218,11 +221,11 @@ abstract class ExtendedBy<D: Any> : By() {
     }
 
     class ByBufferedImageTemplate(private val template: BufferedImage,
-                             private val similarity: Double,
-                             private val cachedScreenshot: BufferedImage?,
-                             private val transform: ((BufferedImage) -> BufferedImage)? = null,
-                             private val fillColor: java.awt.Color = java.awt.Color.BLACK /* unused in single search */,
-                             private val maxResults: Int = 20 /* unused in single search */) : ExtendedBy<BufferedImage>() {
+                                  private val similarity: Double,
+                                  private val cachedScreenshot: BufferedImage?,
+                                  private val transform: ((BufferedImage) -> BufferedImage)? = null,
+                                  private val fillColor: java.awt.Color = java.awt.Color.BLACK /* unused in single search */,
+                                  private val maxResults: Int = 20 /* unused in single search */) : ExtendedBy<BufferedImage>() {
 
         override fun getData() = template // TODO: return all info
 
@@ -253,6 +256,30 @@ abstract class ExtendedBy<D: Any> : By() {
             return "By.template: bufferedImage: $template, similarity=$similarity"
         }
     }
+
+    class ExtendedByCocos2dName(private val name: String, private val parentByContext: ByContext) : ExtendedBy<String>() {
+
+        override fun getData() = name
+
+        override fun findElements(context: SearchContext): List<WebElement> {
+            return listOf(findElement(context))
+        }
+
+        override fun findElement(context: SearchContext): WebElement {
+            val element = Cocos2DElement(name, parentByContext)
+            if(!element.isDisplayed) {
+                throw NoSuchElementException("Cannot locate an element using " + this.toString())
+            }
+            element.tag = element.proccessElement("return element.tag") as? Long?
+            return element
+        }
+
+        override fun toString(): String {
+            return "By.cocos2dName: $name"
+        }
+
+    }
+
 
     companion object {
         fun classNameList(classesText: String): By {
@@ -312,6 +339,10 @@ abstract class ExtendedBy<D: Any> : By() {
 
         fun value(rawData: String): By {
             return By.xpath("//*[@value = \"$rawData\"]")
+        }
+
+        fun cocos2dName(name: String, parentByContext: ByContext): By {
+            return ExtendedByCocos2dName(name, parentByContext)
         }
     }
 

@@ -88,4 +88,5 @@ interface VanillaDriverModule: DriverModule {
     fun switchToDefaultContent(): WebDriver
     fun switchToAlert(): Alert
 
+    val queryParams: Map<String, List<String>?> // TODO: make new module for this
 }
